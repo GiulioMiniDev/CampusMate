@@ -1,0 +1,56 @@
+:root {
+  --cm-surface: #f5f7fb;
+  --cm-card: #ffffff;
+  --cm-border: #d9e1ec;
+  --cm-ink: #1f2937;
+  --cm-accent: #0d6efd;
+}
+
+body {
+  margin: 0;
+  color: var(--cm-ink);
+  background:
+    radial-gradient(circle at top right, rgba(13, 110, 253, 0.12), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, var(--cm-surface) 100%);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.hero-card {
+  background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
+  border: 1px solid var(--cm-border);
+  box-shadow: 0 20px 45px rgba(31, 41, 55, 0.08);
+}
+
+.tracking {
+  letter-spacing: 0.08em;
+}
+
+.status-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.status-card {
+  padding: 1rem;
+  border: 1px solid var(--cm-border);
+  border-radius: 1rem;
+  background: var(--cm-card);
+}
+
+.status-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 767.98px) {
+  .hero-card {
+    padding: 1.5rem;
+  }
+}
+
