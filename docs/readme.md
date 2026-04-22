@@ -1,0 +1,2 @@
+Titolo: CampusMate — Dashboard interattiva per la gestione e prenotazione di aule studio
+Descrzione: Piattaforma web per il monitoraggio in tempo reale dell'affluenza nelle aule universitarie. L'applicazione include una mappa interattiva dinamica per visualizzare la disponibilità dei posti e un sistema di prenotazione per sessioni di studio individuali o di gruppo con gestione dei dati su database.
