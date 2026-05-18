@@ -26,7 +26,7 @@
           <div class="row g-4 align-items-center">
             <div class="col-lg-8">
               <p class="text-uppercase small fw-semibold tracking mb-2">Dashboard aule studio</p>
-              <h1 class="display-6 fw-bold mb-3">Base client separata dal backend PHP e dal servizio WebSocket</h1>
+              <h1 class="display-6 fw-bold mb-3">Base client collegata al backend Node.js e al servizio WebSocket</h1>
               <p class="lead mb-0">
                 Questa schermata conferma il setup iniziale con Vue, Bootstrap, AJAX e WebSocket.
               </p>
@@ -34,7 +34,7 @@
             <div class="col-lg-4">
               <div class="status-grid">
                 <article class="status-card">
-                  <span class="status-label">Backend PHP</span>
+                  <span class="status-label">Backend Node.js</span>
                   <strong>{{ backendStatus }}</strong>
                 </article>
                 <article class="status-card">
@@ -51,14 +51,14 @@
             <div class="card shadow-sm h-100">
               <div class="card-body">
                 <h2 class="h4 mb-3">Diagnostica HTTP</h2>
-                <p class="text-body-secondary">Dati caricati dall'endpoint PHP `/api/health`.</p>
+                <p class="text-body-secondary">Dati caricati dall'endpoint Node.js `/api/health`.</p>
                 <div v-if="health" class="small">
                   <p class="mb-2"><strong>Servizio:</strong> {{ health.service }}</p>
                   <p class="mb-2"><strong>Stack:</strong> {{ health.stack.join(', ') }}</p>
                   <p class="mb-2"><strong>Timestamp:</strong> {{ health.timestamp }}</p>
                 </div>
                 <div v-else class="alert alert-warning mb-0">
-                  Nessuna risposta dal backend PHP. Verifica che il server sia in esecuzione.
+                  Nessuna risposta dal backend Node.js. Verifica che il server sia in esecuzione.
                 </div>
               </div>
             </div>
@@ -97,4 +97,3 @@
     <script src="./assets/js/app.js"></script>
   </body>
 </html>
-
