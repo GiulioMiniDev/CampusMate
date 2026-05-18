@@ -1,10 +1,21 @@
-# CampusMate - Design Iniziale
+# CampusMate - piano iniziale
 
 Data: 2026-04-22
 
-## Obiettivo
+## Idea del progetto
 
-Impostare la base del progetto `CampusMate` nel rispetto delle specifiche del corso e del file `docs/readme.md`, separando chiaramente la parte client dalla parte server e utilizzando una sola tecnologia backend principale:
+CampusMate e una dashboard web per vedere in tempo reale quanta disponibilita c'e nelle aule studio dell'universita e per prenotare una sessione di studio, sia individuale che di gruppo.
+
+L'obiettivo non e fare subito un'app enorme, ma costruire una base fatta bene:
+
+- una pagina client chiara e usabile;
+- un backend unico in Node.js;
+- un database MySQL con aule, utenti e prenotazioni;
+- aggiornamenti realtime tramite WebSocket.
+
+Per il backend usiamo Node.js, cosi teniamo API e WebSocket nello stesso ambiente e il progetto resta piu semplice da gestire.
+
+## Tecnologie che useremo
 
 - HTML
 - CSS
@@ -12,66 +23,13 @@ Impostare la base del progetto `CampusMate` nel rispetto delle specifiche del co
 - JavaScript
 - AJAX/JSON
 - Vue.js
-- MySQL
 - Node.js
 - WebSocket
+- MySQL
 
-## Approccio Scelto
+## Struttura generale
 
-Tra le possibili soluzioni e stata scelta una struttura monorepo con responsabilita separate:
-
-- `client/` per interfaccia e logica lato browser
-- `server/` per API HTTP/JSON, accesso ai dati e notifiche in tempo reale via WebSocket
-- `database/` per schema e dati iniziali
-
-Questa impostazione rende semplice spiegare l'architettura durante la presentazione e mantiene distinti:
-
-- il client, responsabile dell'interfaccia e delle interazioni utente
-- il server Node.js, responsabile della logica applicativa, del database e del realtime
-- il database MySQL, responsabile della persistenza dei dati
-
-## Architettura
-
-### Client
-
-Il client usa:
-
-- Vue.js per organizzare la UI
-- Bootstrap per la componente grafica di base
-- JavaScript per gestione DOM, richieste AJAX e WebSocket
-
-Responsabilita principali:
-
-- mostrare lo stato della dashboard
-- inviare richieste HTTP al backend Node.js
-- ricevere eventi live dal server WebSocket
-
-### Server Node.js
-
-Il server Node.js e il punto centrale della logica applicativa:
-
-- espone endpoint JSON
-- valida gli input
-- legge e scrive sul database MySQL
-- prepara i dati per dashboard, aule e prenotazioni
-
-Lo stesso server gestisce anche la parte realtime:
-
-- connessioni WebSocket persistenti
-- broadcast di aggiornamenti live
-- notifica ai client dei cambiamenti di stato
-
-In questo modo il progetto usa una sola tecnologia backend, evitando duplicazione tra servizi diversi e rendendo piu semplice mantenere coerenti API HTTP, accesso ai dati e notifiche live.
-
-### Database
-
-MySQL conserva i dati applicativi:
-
-- utenti
-- aule studio
-- prenotazioni
-
-## Struttura del Repository
+Abbiamo scelto una struttura semplice, divisa per responsabilita:
 
 ```text
 CampusMate/
@@ -94,42 +52,204 @@ CampusMate/
     plans/
 ```
 
-## Flusso Dati
+L'idea e questa:
 
-Flusso iniziale previsto:
+- `client/` contiene la parte visibile dall'utente;
+- `server/` contiene API, logica applicativa, accesso al database e WebSocket;
+- `database/` contiene schema e dati iniziali;
+- `docs/` contiene appunti, piani e documentazione.
 
-1. Il client carica i dati iniziali tramite chiamate HTTP al backend Node.js.
-2. Il backend Node.js risponde in JSON ed e l'unico punto che accede al database.
-3. Il client apre una connessione WebSocket verso lo stesso server Node.js.
-4. Quando cambia lo stato di un'aula o di una prenotazione, il server invia un evento realtime ai client connessi.
+Nel repository ci sono ancora le vecchie cartelle `server-php/` e `server-ws/`, ma andranno sostituite con la nuova cartella `server/`, visto che abbiamo scelto Node.js come unico backend.
 
-## Gestione Errori
+## Come dovrebbe funzionare
 
-Per la base iniziale:
+1. L'utente apre il client nel browser.
+2. Il client chiede al server Node.js l'elenco delle aule.
+3. Il server legge i dati da MySQL e risponde in JSON.
+4. Il client apre anche una connessione WebSocket.
+5. Quando cambia una prenotazione o la disponibilita di un'aula, il server manda un aggiornamento ai client collegati.
+6. La dashboard si aggiorna senza dover ricaricare la pagina.
 
-- errori HTTP gestiti nel client con messaggi semplici
-- validazione lato server Node.js
-- gestione base di connessione, chiusura ed errore WebSocket
-- fallback client in caso di backend non raggiungibile
+## Client
 
-## Testing Iniziale
+Il client sara fatto con HTML, CSS, Bootstrap, JavaScript e Vue.js.
 
-Per il primo setup e sufficiente verificare:
+Dovra mostrare:
 
-- caricamento del client
-- risposta degli endpoint Node.js di base
-- apertura di una connessione WebSocket
-- ricezione di un messaggio iniziale dal server realtime
+- riepilogo generale delle aule;
+- lista o mappa delle aule studio;
+- posti totali e posti disponibili;
+- stato dell'aula, ad esempio aperta, piena o chiusa;
+- form per creare una prenotazione;
+- messaggi di caricamento, errore o conferma.
 
-## Scope di Questa Prima Iterazione
+Il client usera AJAX per parlare con le API Node.js e WebSocket per ricevere gli aggiornamenti realtime.
 
-Questa iterazione imposta solo la struttura iniziale del progetto:
+## Server Node.js
 
-- scaffolding cartelle
-- client Vue + Bootstrap minimale
-- server Node.js con endpoint JSON base
-- server Node.js con WebSocket minimale
-- schema SQL iniziale
+Il server Node.js sara il backend principale del progetto.
 
-Le funzionalita complete di prenotazione, autenticazione e sincronizzazione avanzata saranno sviluppate nelle iterazioni successive.
+Dovra occuparsi di:
 
+- esporre API HTTP/JSON;
+- validare i dati ricevuti dal client;
+- leggere e scrivere su MySQL;
+- creare prenotazioni;
+- aggiornare i posti disponibili;
+- gestire gli errori in modo chiaro;
+- mandare eventi WebSocket ai client collegati.
+
+In questo modo abbiamo un solo backend da spiegare, avviare e mantenere.
+
+## Database
+
+Il database MySQL conterra almeno queste tabelle:
+
+- `users`;
+- `study_rooms`;
+- `reservations`.
+
+Per ora bastano questi dati, poi se serve possiamo aggiungere campi per migliorare la mappa o descrivere meglio le aule.
+
+## Errori da gestire
+
+Per la prima versione vogliamo gestire almeno questi casi:
+
+- server non raggiungibile;
+- database non raggiungibile;
+- aula piena;
+- prenotazione con orari non validi;
+- numero di posti richiesto maggiore della disponibilita;
+- WebSocket scollegato o non disponibile.
+
+Non serve fare una gestione perfetta di ogni caso, ma almeno evitare che l'app si blocchi senza spiegare nulla.
+
+## Prima versione da consegnare
+
+La prima versione deve permettere di:
+
+- aprire il client;
+- vedere le aule dal database;
+- creare una prenotazione base;
+- aggiornare i posti disponibili;
+- ricevere almeno un aggiornamento realtime via WebSocket;
+- avviare il progetto seguendo la documentazione.
+
+Le parti piu avanzate, come login completo, permessi e gestione dettagliata degli utenti, possono arrivare dopo.
+
+## Divisione del lavoro
+
+Secondo noi ha senso dividerci cosi:
+
+- Giulio: backend Node.js, API, WebSocket e logica applicativa;
+- Filippo: client, interfaccia, dashboard e collegamento AJAX/WebSocket lato browser;
+- Alessandro: database, dati iniziali, test, documentazione e supporto all'integrazione.
+
+La divisione non significa che ognuno lavora isolato. Alla fine le parti devono tornare insieme, quindi i nomi dei campi, gli endpoint e il formato dei dati vanno concordati.
+
+## Task Giulio - Server Node.js
+
+- [ ] Creare la cartella `server/`.
+- [ ] Inizializzare `package.json`.
+- [ ] Aggiungere gli script per avviare il server.
+- [ ] Installare e configurare Express.
+- [ ] Preparare la struttura `src/config/`, `src/routes/`, `src/services/`, `src/websocket/`.
+- [ ] Configurare la connessione a MySQL.
+- [ ] Creare `GET /api/health`.
+- [ ] Creare `GET /api/rooms`.
+- [ ] Creare `GET /api/rooms/:id`.
+- [ ] Creare `GET /api/reservations`.
+- [ ] Creare `POST /api/reservations`.
+- [ ] Validare i dati ricevuti quando si crea una prenotazione.
+- [ ] Controllare che l'aula esista prima di prenotare.
+- [ ] Controllare che ci siano abbastanza posti disponibili.
+- [ ] Aggiornare i posti disponibili dopo una prenotazione.
+- [ ] Restituire errori JSON comprensibili.
+- [ ] Configurare CORS se client e server usano porte diverse.
+- [ ] Integrare WebSocket nello stesso server Node.js.
+- [ ] Mandare un messaggio iniziale quando un client si collega via WebSocket.
+- [ ] Mandare un evento realtime quando cambia una prenotazione.
+- [ ] Mandare un evento realtime quando cambia la disponibilita di un'aula.
+- [ ] Scrivere due righe di istruzioni per avviare il backend.
+- [ ] Spostare o sostituire il vecchio codice `server-ws/` nella nuova struttura.
+- [ ] Verificare con chiamate manuali che le API rispondano correttamente.
+
+## Task Filippo - Client e interfaccia
+
+- [ ] Sistemare la struttura di `client/`.
+- [ ] Preparare `index.html` con Bootstrap e Vue.js.
+- [ ] Creare la dashboard iniziale.
+- [ ] Mostrare numero totale di aule.
+- [ ] Mostrare posti disponibili totali.
+- [ ] Mostrare le aule in lista o in una mappa semplice.
+- [ ] Mostrare per ogni aula nome, edificio, piano, capienza e posti disponibili.
+- [ ] Evidenziare lo stato dell'aula: aperta, piena, chiusa o quasi piena.
+- [ ] Creare il form di prenotazione.
+- [ ] Nel form inserire aula, orario inizio, orario fine, tipo prenotazione e numero posti.
+- [ ] Validare lato client i campi principali.
+- [ ] Collegare il caricamento aule a `GET /api/rooms`.
+- [ ] Collegare il form a `POST /api/reservations`.
+- [ ] Gestire stato di caricamento durante le richieste.
+- [ ] Mostrare messaggi di errore se una chiamata fallisce.
+- [ ] Mostrare conferma quando una prenotazione va a buon fine.
+- [ ] Aprire la connessione WebSocket dal browser.
+- [ ] Aggiornare la dashboard quando arriva un evento WebSocket.
+- [ ] Mostrare un avviso se il WebSocket non e disponibile.
+- [ ] Curare lo stile in `client/assets/css/styles.css`.
+- [ ] Controllare che la pagina sia usabile anche da mobile.
+- [ ] Fare una prova completa dal browser.
+
+## Task Alessandro - Database, test e documentazione
+
+- [ ] Controllare `database/schema.sql`.
+- [ ] Verificare che `users`, `study_rooms` e `reservations` siano sufficienti.
+- [ ] Aggiungere vincoli dove servono, ad esempio chiavi esterne e campi obbligatori.
+- [ ] Valutare se aggiungere campi utili per la mappa, tipo posizione, descrizione o zona dell'aula.
+- [ ] Controllare `database/seed.sql`.
+- [ ] Aggiungere piu aule di esempio.
+- [ ] Aggiungere utenti di esempio.
+- [ ] Aggiungere prenotazioni di esempio, se utili per la demo.
+- [ ] Scrivere come creare il database.
+- [ ] Scrivere come importare schema e seed.
+- [ ] Provare le query principali usate dal server.
+- [ ] Verificare che le API restituiscano dati coerenti con il database.
+- [ ] Testare il caso aula piena.
+- [ ] Testare il caso orario non valido.
+- [ ] Testare il caso posti richiesti maggiori della disponibilita.
+- [ ] Testare che una prenotazione aggiorni i posti disponibili.
+- [ ] Preparare una checklist per la demo finale.
+- [ ] Aggiornare la documentazione con porte, comandi e ordine di avvio.
+- [ ] Preparare una breve scaletta per spiegare il progetto al professore.
+
+## Task da fare insieme
+
+- [ ] Decidere il formato JSON definitivo delle aule.
+- [ ] Decidere il formato JSON definitivo delle prenotazioni.
+- [ ] Decidere il formato JSON degli errori.
+- [ ] Decidere il formato degli eventi WebSocket.
+- [ ] Allineare i nomi dei campi tra database, server e client.
+- [ ] Collegare davvero client, server e database.
+- [ ] Provare il flusso completo: apro pagina, vedo aule, prenoto, vedo aggiornamento.
+- [ ] Eliminare o ignorare le vecchie parti PHP.
+- [ ] Eliminare o integrare la vecchia cartella WebSocket separata.
+- [ ] Controllare che il progetto parta da zero seguendo solo la documentazione.
+- [ ] Fare una revisione finale dei file.
+- [ ] Preparare una demo breve ma funzionante.
+- [ ] Verificare che il progetto rispetti la scelta full Node.js.
+
+## Ordine consigliato
+
+1. Alessandro sistema database e dati iniziali.
+2. Giulio prepara server Node.js e collegamento a MySQL.
+3. Filippo prepara il client anche con dati temporanei.
+4. Giulio espone API e WebSocket.
+5. Filippo collega il client alle API vere.
+6. Alessandro prova i casi principali e aggiorna la documentazione.
+7. Tutti insieme facciamo integrazione finale e demo.
+
+## Note per noi
+
+- Meglio non complicare troppo la prima versione.
+- Prima facciamo funzionare bene il flusso base, poi aggiungiamo dettagli.
+- Se una cosa non serve per la demo o per le richieste del corso, la lasciamo per dopo.
+- La cosa piu importante e riuscire a spiegare chiaramente architettura, database, API e WebSocket.
