@@ -215,14 +215,14 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 
 ## Task Alessandro - Database, test e documentazione
 
-- [ ] Controllare `database/schema.sql`.
-- [ ] Verificare che `users`, `buildings`, `study_rooms`, `study_tables` e `reservations` siano sufficienti.
-- [ ] Aggiungere vincoli dove servono, ad esempio chiavi esterne e campi obbligatori.
-- [ ] Valutare se aggiungere campi utili per la mappa, tipo posizione, descrizione o zona dell'aula.
-- [ ] Controllare `database/seed.sql`.
-- [ ] Aggiungere piu aule di esempio.
-- [ ] Aggiungere utenti di esempio.
-- [ ] Aggiungere prenotazioni di esempio, se utili per la demo.
+- [x] Controllare `database/schema.sql`.
+- [x] Verificare che `users`, `buildings`, `study_rooms`, `study_tables` e `reservations` siano sufficienti.
+- [x] Aggiungere vincoli dove servono, ad esempio chiavi esterne e campi obbligatori.
+- [x] Valutare se aggiungere campi utili per la mappa, tipo posizione, descrizione o zona dell'aula.
+- [x] Controllare `database/seed.sql`.
+- [x] Aggiungere piu aule di esempio.
+- [x] Aggiungere utenti di esempio.
+- [x] Aggiungere prenotazioni di esempio, se utili per la demo.
 - [ ] Scrivere come creare il database.
 - [ ] Scrivere come importare schema e seed.
 - [ ] Provare le query principali usate dal server.
