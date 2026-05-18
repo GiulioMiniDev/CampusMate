@@ -190,14 +190,14 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 
 ## Task Filippo - Client e interfaccia
 
-- [ ] Sistemare la struttura di `client/`.
-- [ ] Preparare `index.html` con Bootstrap e Vue.js.
-- [ ] Creare la dashboard iniziale.
-- [ ] Mostrare numero totale di aule.
-- [ ] Mostrare posti disponibili totali.
-- [ ] Mostrare le aule in lista o in una mappa semplice.
-- [ ] Mostrare per ogni aula nome, edificio, piano, capienza e posti disponibili.
-- [ ] Evidenziare lo stato dell'aula: aperta, piena, chiusa o quasi piena.
+- [x] Sistemare la struttura di `client/`.
+- [x] Preparare `index.html` con Bootstrap e Vue.js.
+- [x] Creare la dashboard iniziale.
+- [x] Mostrare numero totale di aule.
+- [x] Mostrare posti disponibili totali.
+- [x] Mostrare le aule in lista o in una mappa semplice.
+- [x] Mostrare per ogni aula nome, edificio, piano, capienza e posti disponibili.
+- [x] Evidenziare lo stato dell'aula: aperta, piena, chiusa o quasi piena.
 - [ ] Creare il form di prenotazione.
 - [ ] Nel form inserire aula, orario inizio, orario fine, tipo prenotazione e numero posti.
 - [ ] Validare lato client i campi principali.
@@ -209,8 +209,8 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [ ] Aprire la connessione WebSocket dal browser.
 - [ ] Aggiornare la dashboard quando arriva un evento WebSocket.
 - [ ] Mostrare un avviso se il WebSocket non e disponibile.
-- [ ] Curare lo stile in `client/assets/css/styles.css`.
-- [ ] Controllare che la pagina sia usabile anche da mobile.
+- [x] Curare lo stile in `client/assets/css/styles.css`.
+- [x] Controllare che la pagina sia usabile anche da mobile.
 - [ ] Fare una prova completa dal browser.
 
 ## Task Alessandro - Database, test e documentazione
