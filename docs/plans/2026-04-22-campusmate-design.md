@@ -103,13 +103,27 @@ In questo modo abbiamo un solo backend da spiegare, avviare e mantenere.
 
 ## Database
 
-Il database MySQL conterra almeno queste tabelle:
+Il database MySQL conterra queste tabelle principali:
 
 - `users`;
+- `buildings`;
 - `study_rooms`;
+- `study_tables`;
 - `reservations`.
 
-Per ora bastano questi dati, poi se serve possiamo aggiungere campi per migliorare la mappa o descrivere meglio le aule.
+La struttura scelta e:
+
+```text
+buildings
+  1 -> N study_rooms
+          1 -> N study_tables
+                  N <-> M users
+                       tramite reservations
+```
+
+In pratica un edificio contiene piu aule studio, ogni aula contiene piu tavoli e le prenotazioni collegano utenti e tavoli. `reservations` e quindi la tabella ponte tra `users` e `study_tables`, con orario di inizio, orario di fine, tipo di prenotazione, numero di posti richiesti e stato.
+
+Questo permette di gestire la disponibilita reale a livello di tavolo, invece di tenere solo una capienza generica sull'aula.
 
 ## Errori da gestire
 
@@ -202,7 +216,7 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 ## Task Alessandro - Database, test e documentazione
 
 - [ ] Controllare `database/schema.sql`.
-- [ ] Verificare che `users`, `study_rooms` e `reservations` siano sufficienti.
+- [ ] Verificare che `users`, `buildings`, `study_rooms`, `study_tables` e `reservations` siano sufficienti.
 - [ ] Aggiungere vincoli dove servono, ad esempio chiavi esterne e campi obbligatori.
 - [ ] Valutare se aggiungere campi utili per la mappa, tipo posizione, descrizione o zona dell'aula.
 - [ ] Controllare `database/seed.sql`.
