@@ -59,7 +59,7 @@ L'idea e questa:
 - `database/` contiene schema e dati iniziali;
 - `docs/` contiene appunti, piani e documentazione.
 
-Nel repository ci sono ancora le vecchie cartelle `server-php/` e `server-ws/`, ma andranno sostituite con la nuova cartella `server/`, visto che abbiamo scelto Node.js come unico backend.
+La parte backend viene raccolta dentro `server/`, cosi API e WebSocket stanno nello stesso punto.
 
 ## Come dovrebbe funzionare
 
@@ -171,7 +171,7 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [ ] Mandare un evento realtime quando cambia una prenotazione.
 - [ ] Mandare un evento realtime quando cambia la disponibilita di un'aula.
 - [ ] Scrivere due righe di istruzioni per avviare il backend.
-- [ ] Spostare o sostituire il vecchio codice `server-ws/` nella nuova struttura.
+- [ ] Tenere API e WebSocket dentro la stessa struttura `server/`.
 - [ ] Verificare con chiamate manuali che le API rispondano correttamente.
 
 ## Task Filippo - Client e interfaccia
@@ -230,8 +230,8 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [ ] Allineare i nomi dei campi tra database, server e client.
 - [ ] Collegare davvero client, server e database.
 - [ ] Provare il flusso completo: apro pagina, vedo aule, prenoto, vedo aggiornamento.
-- [ ] Eliminare o ignorare le vecchie parti PHP.
-- [ ] Eliminare o integrare la vecchia cartella WebSocket separata.
+- [ ] Controllare che il backend usato nella demo sia solo quello dentro `server/`.
+- [ ] Controllare che API e WebSocket siano gestiti dallo stesso server Node.js.
 - [ ] Controllare che il progetto parta da zero seguendo solo la documentazione.
 - [ ] Fare una revisione finale dei file.
 - [ ] Preparare una demo breve ma funzionante.
