@@ -163,13 +163,13 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 
 ## Task Giulio - Server Node.js
 
-- [ ] Creare la cartella `server/`.
-- [ ] Inizializzare `package.json`.
-- [ ] Aggiungere gli script per avviare il server.
-- [ ] Installare e configurare Express.
-- [ ] Preparare la struttura `src/config/`, `src/routes/`, `src/services/`, `src/websocket/`.
-- [ ] Configurare la connessione a MySQL.
-- [ ] Creare `GET /api/health`.
+- [x] Creare la cartella `server/`.
+- [x] Inizializzare `package.json`.
+- [x] Aggiungere gli script per avviare il server.
+- [x] Installare e configurare Express.
+- [x] Preparare la struttura `src/config/`, `src/routes/`, `src/services/`, `src/websocket/`.
+- [x] Configurare la connessione a MySQL.
+- [x] Creare `GET /api/health`.
 - [ ] Creare `GET /api/rooms`.
 - [ ] Creare `GET /api/rooms/:id`.
 - [ ] Creare `GET /api/reservations`.
@@ -179,14 +179,14 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [ ] Controllare che ci siano abbastanza posti disponibili.
 - [ ] Aggiornare i posti disponibili dopo una prenotazione.
 - [ ] Restituire errori JSON comprensibili.
-- [ ] Configurare CORS se client e server usano porte diverse.
-- [ ] Integrare WebSocket nello stesso server Node.js.
-- [ ] Mandare un messaggio iniziale quando un client si collega via WebSocket.
+- [x] Configurare CORS se client e server usano porte diverse.
+- [x] Integrare WebSocket nello stesso server Node.js.
+- [x] Mandare un messaggio iniziale quando un client si collega via WebSocket.
 - [ ] Mandare un evento realtime quando cambia una prenotazione.
 - [ ] Mandare un evento realtime quando cambia la disponibilita di un'aula.
-- [ ] Scrivere due righe di istruzioni per avviare il backend.
-- [ ] Tenere API e WebSocket dentro la stessa struttura `server/`.
-- [ ] Verificare con chiamate manuali che le API rispondano correttamente.
+- [x] Scrivere due righe di istruzioni per avviare il backend.
+- [x] Tenere API e WebSocket dentro la stessa struttura `server/`.
+- [ ] Verificare con chiamate manuali che le API rispondano correttamente con MySQL acceso.
 
 ## Task Filippo - Client e interfaccia
 

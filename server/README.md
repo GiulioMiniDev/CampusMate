@@ -1,0 +1,25 @@
+# CampusMate server
+
+Backend Node.js per API HTTP/JSON e WebSocket.
+
+## Avvio
+
+1. Copiare `.env.example` in `.env` se servono credenziali MySQL diverse da quelle di default.
+2. Creare il database importando `database/schema.sql` e poi `database/seed.sql`.
+3. Avviare il server:
+
+```bash
+npm install
+npm start
+```
+
+Di default il server parte su:
+
+- API: `http://localhost:8000`
+- WebSocket: `ws://localhost:8000`
+
+## Endpoint iniziali
+
+- `GET /api/health`
+
+Le API per aule e prenotazioni verranno aggiunte nelle prossime fasi.

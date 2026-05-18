@@ -5,7 +5,7 @@
     data() {
       return {
         apiBaseUrl: "http://localhost:8000",
-        websocketUrl: "ws://localhost:9000",
+        websocketUrl: "ws://localhost:8000",
         backendStatus: "in attesa",
         socketStatus: "disconnesso",
         health: null,
@@ -62,4 +62,3 @@
     }
   }).mount("#app");
 })();
-
