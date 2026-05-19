@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const env = require("./config/env");
 const healthRoutes = require("./routes/healthRoutes");
+const roomRoutes = require("./routes/roomRoutes");
+const createReservationRoutes = require("./routes/reservationRoutes");
 const createWebSocketHub = require("./websocket/hub");
 
 const app = express();
@@ -13,6 +15,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/health", healthRoutes);
+app.use("/api/rooms", roomRoutes);
+app.use("/api/reservations", createReservationRoutes(websocketHub));
 
 app.use((req, res) => {
   res.status(404).json({

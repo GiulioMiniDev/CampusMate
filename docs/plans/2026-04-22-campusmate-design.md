@@ -170,10 +170,10 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [x] Preparare la struttura `src/config/`, `src/routes/`, `src/services/`, `src/websocket/`.
 - [x] Configurare la connessione a MySQL.
 - [x] Creare `GET /api/health`.
-- [ ] Creare `GET /api/rooms`.
-- [ ] Creare `GET /api/rooms/:id`.
-- [ ] Creare `GET /api/reservations`.
-- [ ] Creare `POST /api/reservations`.
+- [x] Creare `GET /api/rooms`.
+- [x] Creare `GET /api/rooms/:id`.
+- [x] Creare `GET /api/reservations`.
+- [x] Creare `POST /api/reservations`.
 - [ ] Validare i dati ricevuti quando si crea una prenotazione.
 - [ ] Controllare che l'aula esista prima di prenotare.
 - [ ] Controllare che ci siano abbastanza posti disponibili.
