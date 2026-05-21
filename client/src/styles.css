@@ -26,7 +26,6 @@ body {
   flex: 1;
 }
 
-/* Hero Card */
 .hero-card {
   background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
   border: 1px solid var(--cm-border);
@@ -34,10 +33,10 @@ body {
 }
 
 .tracking {
+  color: var(--cm-accent);
   letter-spacing: 0.08em;
 }
 
-/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -47,7 +46,7 @@ body {
 .stat-card {
   padding: 1.5rem;
   border: 1px solid var(--cm-border);
-  border-radius: 1.25rem;
+  border-radius: 1rem;
   background: var(--cm-card);
   text-align: center;
   box-shadow: 0 2px 8px rgba(31, 41, 55, 0.04);
@@ -65,31 +64,6 @@ body {
   color: #6b7280;
 }
 
-/* Status Cards */
-.status-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status-icon.bg-success {
-  background-color: #10b981;
-}
-
-.status-icon.bg-danger {
-  background-color: #ef4444;
-}
-
-.status-icon.bg-warning {
-  background-color: #f59e0b;
-}
-
-.status-icon.bg-info {
-  background-color: #3b82f6;
-}
-
-/* Room Cards */
 .room-card {
   transition: all 0.3s ease;
   border: 1px solid var(--cm-border);
@@ -107,9 +81,18 @@ body {
 .room-card .badge {
   font-size: 0.75rem;
   padding: 0.4rem 0.8rem;
+  white-space: nowrap;
 }
 
-/* Code Block */
+.progress {
+  height: 8px;
+}
+
+.spinner-border-sm {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
 .code-block {
   background: #f3f4f6;
   padding: 1rem;
@@ -122,7 +105,6 @@ body {
   word-break: break-word;
 }
 
-/* Navbar */
 .navbar {
   background-color: var(--cm-card);
 }
@@ -132,26 +114,23 @@ body {
   font-size: 1.25rem;
 }
 
-/* Modal Overlay */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 1rem;
 }
 
-.modal-content {
+.reservation-modal {
   background: var(--cm-card);
   border-radius: 1rem;
   box-shadow: 0 20px 45px rgba(31, 41, 55, 0.15);
   max-width: 500px;
-  width: 90%;
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -170,28 +149,14 @@ body {
   margin: 0;
 }
 
-.btn-close {
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #6b7280;
-}
-
-.btn-close:hover {
-  color: var(--cm-ink);
-}
-
 .modal-body {
   padding: 1.5rem;
 }
 
-/* Utility */
-.shadow-sm {
-  box-shadow: 0 1px 2px rgba(31, 41, 55, 0.05);
+.diagnostics {
+  display: none;
 }
 
-/* Responsive */
 @media (max-width: 767.98px) {
   .hero-card {
     padding: 1.5rem;
@@ -219,4 +184,3 @@ body {
     grid-template-columns: 1fr;
   }
 }
-

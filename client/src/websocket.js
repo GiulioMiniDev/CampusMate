@@ -1,11 +1,17 @@
-// WebSocket Service - Gestione della connessione WebSocket
-import { state, mutations } from './store.js';
-import { apiService } from './api.js';
+import { apiService } from "./api.js";
+import { mutations, state } from "./store.js";
 
 export const websocketService = {
   socket: null,
-  
+  reconnectTimer: null,
+  shouldReconnect: true,
+
   connect() {
+    if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
+      return;
+    }
+
+    this.shouldReconnect = true;
     this.socket = new WebSocket(state.websocketUrl);
 
     this.socket.addEventListener("open", () => {
@@ -16,35 +22,42 @@ export const websocketService = {
     this.socket.addEventListener("message", (event) => {
       try {
         const message = JSON.parse(event.data);
-        
-        // Se è un evento di aggiornamento, ricarica le aule
+
         if (message.type === "reservation_updated" || message.type === "room_updated") {
-          apiService.loadRooms().catch(err => console.error("Error reloading rooms:", err));
+          apiService.loadRooms().catch((error) => console.error("Error reloading rooms:", error));
         }
       } catch {
-        // Se non è JSON valido, aggiungi ai messaggi di debug
         mutations.addSocketMessage(event.data);
       }
     });
 
     this.socket.addEventListener("close", () => {
       mutations.setSocketStatus("chiuso");
-      // Riconnessione automatica dopo 3 secondi
-      setTimeout(() => this.connect(), 3000);
+
+      if (this.shouldReconnect) {
+        this.reconnectTimer = setTimeout(() => this.connect(), 3000);
+      }
     });
 
     this.socket.addEventListener("error", () => {
       mutations.setSocketStatus("errore");
     });
   },
-  
+
   send(data) {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(data));
     }
   },
-  
+
   disconnect() {
+    this.shouldReconnect = false;
+
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
     if (this.socket) {
       this.socket.close();
       this.socket = null;

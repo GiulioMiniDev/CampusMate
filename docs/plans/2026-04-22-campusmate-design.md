@@ -34,10 +34,17 @@ Abbiamo scelto una struttura semplice, divisa per responsabilita:
 ```text
 CampusMate/
   client/
-    assets/
-      css/
-      js/
+    src/
+      components/
+      App.vue
+      main.js
+      api.js
+      store.js
+      websocket.js
+      styles.css
     index.html
+    package.json
+    vite.config.js
   server/
     src/
       config/
@@ -72,7 +79,7 @@ La parte backend viene raccolta dentro `server/`, cosi API e WebSocket stanno ne
 
 ## Client
 
-Il client sara fatto con HTML, CSS, Bootstrap, JavaScript e Vue.js.
+Il client sara fatto con Vue.js, Vite, HTML, CSS, Bootstrap e JavaScript.
 
 Dovra mostrare:
 
@@ -84,6 +91,29 @@ Dovra mostrare:
 - messaggi di caricamento, errore o conferma.
 
 Il client usera AJAX per parlare con le API Node.js e WebSocket per ricevere gli aggiornamenti realtime.
+
+### Migrazione client a Vue + Vite
+
+Dal 2026-05-21 il client viene migrato da Vue caricato via CDN a un progetto Vue + Vite separato dentro `client/`.
+
+La separazione scelta e:
+
+```text
+CampusMate/
+  client/   # app Vue + Vite
+  server/   # API Express + WebSocket
+```
+
+Decisioni:
+
+- `client/package.json` contiene gli script del frontend.
+- `client/src/App.vue` contiene la dashboard e il form di prenotazione.
+- `client/src/components/` contiene i componenti riutilizzabili della dashboard.
+- `client/src/main.js` monta l'app Vue.
+- `client/src/store.js`, `client/src/api.js` e `client/src/websocket.js` mantengono la logica gia esistente.
+- `client/.env.example` documenta gli URL configurabili di API e WebSocket.
+- Il server Express resta invariato e continua a rispondere su `http://localhost:8000`.
+- In sviluppo il client Vite partira su `http://localhost:5173` e parlera con il backend tramite CORS gia attivo.
 
 ## Server Node.js
 
@@ -208,8 +238,8 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [x] Mostrare conferma quando una prenotazione va a buon fine.
 - [x] Aprire la connessione WebSocket dal browser.
 - [x] Aggiornare la dashboard quando arriva un evento WebSocket.
-- [ ] Mostrare un avviso se il WebSocket non e disponibile.
-- [x] Curare lo stile in `client/assets/css/styles.css`.
+- [x] Mostrare un avviso se il WebSocket non e disponibile.
+- [x] Curare lo stile in `client/src/styles.css`.
 - [x] Controllare che la pagina sia usabile anche da mobile.
 - [ ] Fare una prova completa dal browser.
 
