@@ -198,16 +198,16 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [x] Mostrare le aule in lista o in una mappa semplice.
 - [x] Mostrare per ogni aula nome, edificio, piano, capienza e posti disponibili.
 - [x] Evidenziare lo stato dell'aula: aperta, piena, chiusa o quasi piena.
-- [ ] Creare il form di prenotazione.
-- [ ] Nel form inserire aula, orario inizio, orario fine, tipo prenotazione e numero posti.
-- [ ] Validare lato client i campi principali.
-- [ ] Collegare il caricamento aule a `GET /api/rooms`.
-- [ ] Collegare il form a `POST /api/reservations`.
-- [ ] Gestire stato di caricamento durante le richieste.
-- [ ] Mostrare messaggi di errore se una chiamata fallisce.
-- [ ] Mostrare conferma quando una prenotazione va a buon fine.
-- [ ] Aprire la connessione WebSocket dal browser.
-- [ ] Aggiornare la dashboard quando arriva un evento WebSocket.
+- [x] Creare il form di prenotazione.
+- [x] Nel form inserire aula, orario inizio, orario fine, tipo prenotazione e numero posti.
+- [x] Validare lato client i campi principali.
+- [x] Collegare il caricamento aule a `GET /api/rooms`.
+- [x] Collegare il form a `POST /api/reservations`.
+- [x] Gestire stato di caricamento durante le richieste.
+- [x] Mostrare messaggi di errore se una chiamata fallisce.
+- [x] Mostrare conferma quando una prenotazione va a buon fine.
+- [x] Aprire la connessione WebSocket dal browser.
+- [x] Aggiornare la dashboard quando arriva un evento WebSocket.
 - [ ] Mostrare un avviso se il WebSocket non e disponibile.
 - [x] Curare lo stile in `client/assets/css/styles.css`.
 - [x] Controllare che la pagina sia usabile anche da mobile.

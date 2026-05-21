@@ -36,11 +36,11 @@
             <div class="col-lg-5">
               <div class="stats-grid">
                 <article class="stat-card">
-                  <div class="stat-value">2</div>
+                  <div class="stat-value">{{ totalRooms }}</div>
                   <div class="stat-label">Aule disponibili</div>
                 </article>
                 <article class="stat-card">
-                  <div class="stat-value">16</div>
+                  <div class="stat-value">{{ availableSeats }}</div>
                   <div class="stat-label">Posti liberi</div>
                 </article>
               </div>
@@ -56,57 +56,126 @@
           </div>
 
           <!-- Loading State -->
-          <div class="alert alert-info" style="display: none;">
+          <div v-if="loadingRooms" class="alert alert-info">
             <div class="spinner-border spinner-border-sm me-2" role="status" style="width: 1.2rem; height: 1.2rem;"></div>
             Caricamento aule...
           </div>
 
           <!-- Rooms Grid -->
-          <div class="row g-3">
-            <div class="col-lg-6">
+          <div v-if="rooms.length && !loadingRooms" class="row g-3">
+            <div v-for="room in rooms" :key="room.id" class="col-lg-6">
               <div class="card shadow-sm h-100 room-card">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
-                      <h5 class="card-title mb-1">Studio Principale</h5>
-                      <p class="text-body-secondary mb-0 small">Edificio A - Piano 1</p>
+                      <h5 class="card-title mb-1">{{ room.name }}</h5>
+                      <p class="text-body-secondary mb-0 small">{{ room.building }} - Piano {{ room.floor }}</p>
                     </div>
-                    <span class="badge bg-success">Disponibile</span>
+                    <span :class="['badge', getRoomStatusColor(room)]">
+                      {{ getRoomStatus(room) }}
+                    </span>
                   </div>
                   <div class="progress mb-3" style="height: 8px;">
-                    <div class="progress-bar" style="width: 45%;"></div>
+                    <div 
+                      class="progress-bar" 
+                      :style="{ width: getRoomProgressWidth(room) }"
+                    ></div>
                   </div>
                   <div class="row g-2 small">
-                    <div class="col-6"><span class="text-body-secondary">Totali:</span> <strong>24</strong></div>
-                    <div class="col-6"><span class="text-body-secondary">Disponibili:</span> <strong class="text-success">13</strong></div>
+                    <div class="col-6"><span class="text-body-secondary">Totali:</span> <strong>{{ room.total_seats }}</strong></div>
+                    <div class="col-6"><span class="text-body-secondary">Disponibili:</span> <strong class="text-success">{{ room.available_seats }}</strong></div>
                   </div>
-                  <button class="btn btn-primary btn-sm w-100 mt-3">Prenota</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-lg-6">
-              <div class="card shadow-sm h-100 room-card">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <h5 class="card-title mb-1">Zona Collaborativa</h5>
-                      <p class="text-body-secondary mb-0 small">Edificio A - Piano 2</p>
-                    </div>
-                    <span class="badge bg-warning">Quasi piena</span>
-                  </div>
-                  <div class="progress mb-3" style="height: 8px;">
-                    <div class="progress-bar bg-warning" style="width: 85%;"></div>
-                  </div>
-                  <div class="row g-2 small">
-                    <div class="col-6"><span class="text-body-secondary">Totali:</span> <strong>18</strong></div>
-                    <div class="col-6"><span class="text-body-secondary">Disponibili:</span> <strong class="text-warning">3</strong></div>
-                  </div>
-                  <button class="btn btn-primary btn-sm w-100 mt-3">Prenota</button>
+                  <button 
+                    class="btn btn-primary btn-sm w-100 mt-3"
+                    :disabled="room.available_seats === 0"
+                    @click="openReservationForm(room.id)"
+                  >
+                    {{ room.available_seats > 0 ? 'Prenota' : 'Non disponibile' }}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Empty State -->
+          <div v-else-if="!loadingRooms" class="alert alert-secondary">
+            Nessuna aula disponibile al momento.
+          </div>
+        </section>
+
+        <!-- Reservation Form Modal -->
+        <div v-if="showReservationForm" class="modal-overlay" @click.self="closeReservationForm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Prenota Aula</h5>
+              <button type="button" class="btn-close" @click="closeReservationForm"></button>
+            </div>
+            <div class="modal-body">
+              <div v-if="formMessage" :class="['alert', formMessageType === 'success' ? 'alert-success' : 'alert-danger']">
+                {{ formMessage }}
+              </div>
+              
+              <form @submit.prevent="submitReservation">
+                <div class="mb-3">
+                  <label class="form-label">Inizio prenotazione</label>
+                  <input 
+                    type="datetime-local" 
+                    v-model="reservationForm.start_time"
+                    class="form-control"
+                    required
+                  >
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Fine prenotazione</label>
+                  <input 
+                    type="datetime-local" 
+                    v-model="reservationForm.end_time"
+                    class="form-control"
+                    required
+                  >
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Tipo prenotazione</label>
+                  <select v-model="reservationForm.reservation_type" class="form-select">
+                    <option value="individual">Individuale</option>
+                    <option value="group">Gruppo</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Numero posti</label>
+                  <input 
+                    type="number" 
+                    v-model.number="reservationForm.seats_requested"
+                    class="form-control"
+                    min="1"
+                    required
+                  >
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Note (opzionale)</label>
+                  <textarea 
+                    v-model="reservationForm.notes"
+                    class="form-control"
+                    rows="2"
+                  ></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+                    {{ isSubmitting ? 'Creazione...' : 'Conferma Prenotazione' }}
+                  </button>
+                  <button type="button" class="btn btn-secondary" @click="closeReservationForm" :disabled="isSubmitting">
+                    Annulla
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
         </section>
 
         <!-- Diagnostics Section (Hidden for Debug) -->
@@ -146,3 +215,10 @@
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script type="module" src="./assets/js/app.js"></script>
+  </body>
+</html>
