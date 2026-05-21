@@ -182,6 +182,32 @@ export const apiService = {
     });
   },
 
+  async loadRoomDetail(roomId) {
+    return new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      request.open("GET", `${state.apiBaseUrl}/api/rooms/${roomId}`);
+
+      request.onreadystatechange = () => {
+        if (request.readyState !== 4) return;
+
+        if (request.status >= 200 && request.status < 300) {
+          const room = parseJsonResponse(request);
+          mutations.setSelectedRoomDetail(room);
+          resolve(room);
+          return;
+        }
+
+        reject(new Error(getErrorMessage(request, "Dettaglio aula non disponibile.")));
+      };
+
+      request.onerror = () => {
+        reject(new Error("Network error"));
+      };
+
+      request.send();
+    });
+  },
+
   async createReservation(reservationData) {
     mutations.setIsSubmitting(true);
 
@@ -249,6 +275,11 @@ export const apiService = {
         end_time: form.end_time,
         seats_requested: String(form.seats_requested)
       });
+
+      if (form.study_table_id) {
+        params.set("study_table_id", String(form.study_table_id));
+      }
+
       const request = new XMLHttpRequest();
       request.open("GET", `${state.apiBaseUrl}/api/rooms/${form.room_id}/availability?${params.toString()}`);
 
@@ -299,6 +330,11 @@ export const apiService = {
 
     if (form.seats_requested < 1) {
       mutations.setFormMessage("Il numero di posti deve essere almeno 1", "error");
+      return false;
+    }
+
+    if (!form.study_table_id) {
+      mutations.setFormMessage("Seleziona un tavolo dalla planimetria.", "error");
       return false;
     }
 

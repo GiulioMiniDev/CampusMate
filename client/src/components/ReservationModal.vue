@@ -21,6 +21,19 @@
           </span>
         </div>
 
+        <RoomFloorPlan
+          v-if="floorplanTables.length"
+          class="mb-3"
+          :tables="floorplanTables"
+          :selected-table-id="form.study_table_id"
+          :has-slot-availability="Boolean(availability.result?.tables)"
+          @select-table="$emit('select-table', $event)"
+        />
+
+        <div v-else class="alert alert-secondary">
+          Caricamento planimetria aula...
+        </div>
+
         <form @submit.prevent="$emit('submit')">
           <div class="mb-3">
             <label class="form-label">Inizio prenotazione</label>
@@ -84,8 +97,13 @@
 </template>
 
 <script>
+import RoomFloorPlan from "./RoomFloorPlan.vue";
+
 export default {
   name: "ReservationModal",
+  components: {
+    RoomFloorPlan
+  },
   props: {
     form: {
       type: Object,
@@ -106,8 +124,17 @@ export default {
     availability: {
       type: Object,
       required: true
+    },
+    room: {
+      type: Object,
+      default: null
     }
   },
-  emits: ["check-availability", "close", "submit"]
+  emits: ["check-availability", "close", "select-table", "submit"],
+  computed: {
+    floorplanTables() {
+      return this.availability.result?.tables || this.room?.tables || [];
+    }
+  }
 };
 </script>

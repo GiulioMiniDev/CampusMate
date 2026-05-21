@@ -206,10 +206,55 @@ function initializeDatabase() {
     mysqlExec(fs.readFileSync(schemaPath, "utf8"));
     mysqlExec(fs.readFileSync(seedPath, "utf8"));
     ok("Database campusmate importato da schema.sql e seed.sql");
+    ensureTableLayoutColumns();
     return;
   }
 
   ok("Database campusmate gia inizializzato");
+  ensureTableLayoutColumns();
+}
+
+function ensureTableLayoutColumns() {
+  const output = run("docker", [
+    "exec",
+    config.containerName,
+    "mysql",
+    "-uroot",
+    "-N",
+    "-B",
+    "-e",
+    "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'campusmate' AND table_name = 'study_tables' AND column_name = 'layout_x';"
+  ]).trim();
+
+  if (Number(output || 0) > 0) {
+    ok("Campi layout tavoli gia presenti");
+    return;
+  }
+
+  mysqlExec(`
+    USE campusmate;
+    ALTER TABLE study_tables
+      ADD COLUMN layout_x DECIMAL(5,2) NOT NULL DEFAULT 10.00,
+      ADD COLUMN layout_y DECIMAL(5,2) NOT NULL DEFAULT 10.00,
+      ADD COLUMN layout_width DECIMAL(5,2) NOT NULL DEFAULT 14.00,
+      ADD COLUMN layout_height DECIMAL(5,2) NOT NULL DEFAULT 10.00,
+      ADD COLUMN layout_rotation SMALLINT NOT NULL DEFAULT 0;
+    UPDATE study_tables SET layout_x = 18.00, layout_y = 24.00, layout_width = 13.00, layout_height = 13.00 WHERE room_id = 1 AND table_code = 'T1';
+    UPDATE study_tables SET layout_x = 42.00, layout_y = 24.00, layout_width = 13.00, layout_height = 13.00 WHERE room_id = 1 AND table_code = 'T2';
+    UPDATE study_tables SET layout_x = 18.00, layout_y = 58.00, layout_width = 13.00, layout_height = 13.00 WHERE room_id = 1 AND table_code = 'T3';
+    UPDATE study_tables SET layout_x = 42.00, layout_y = 58.00, layout_width = 13.00, layout_height = 13.00 WHERE room_id = 1 AND table_code = 'T4';
+    UPDATE study_tables SET layout_x = 12.00, layout_y = 18.00, layout_width = 12.00, layout_height = 12.00 WHERE room_id = 2 AND table_code = 'T1';
+    UPDATE study_tables SET layout_x = 12.00, layout_y = 44.00, layout_width = 12.00, layout_height = 12.00 WHERE room_id = 2 AND table_code = 'T2';
+    UPDATE study_tables SET layout_x = 46.00, layout_y = 18.00, layout_width = 27.00, layout_height = 16.00 WHERE room_id = 2 AND table_code = 'G1';
+    UPDATE study_tables SET layout_x = 46.00, layout_y = 54.00, layout_width = 27.00, layout_height = 16.00 WHERE room_id = 2 AND table_code = 'G2';
+    UPDATE study_tables SET layout_x = 16.00, layout_y = 20.00, layout_width = 31.00, layout_height = 18.00 WHERE room_id = 3 AND table_code = 'G1';
+    UPDATE study_tables SET layout_x = 54.00, layout_y = 20.00, layout_width = 31.00, layout_height = 18.00 WHERE room_id = 3 AND table_code = 'G2';
+    UPDATE study_tables SET layout_x = 34.00, layout_y = 58.00, layout_width = 29.00, layout_height = 16.00 WHERE room_id = 3 AND table_code = 'G3';
+    UPDATE study_tables SET layout_x = 26.00, layout_y = 28.00, layout_width = 14.00, layout_height = 14.00 WHERE room_id = 4 AND table_code = 'T1';
+    UPDATE study_tables SET layout_x = 58.00, layout_y = 56.00, layout_width = 14.00, layout_height = 14.00 WHERE room_id = 4 AND table_code = 'T2';
+  `);
+
+  ok("Campi layout tavoli aggiunti al database esistente");
 }
 
 function npmCommand() {

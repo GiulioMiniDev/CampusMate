@@ -76,8 +76,10 @@
       :form-message="formMessage"
       :form-message-type="formMessageType"
       :availability="availabilityCheck"
+      :room="selectedRoomDetail"
       @check-availability="scheduleAvailabilityCheck"
       @close="closeReservationForm"
+      @select-table="selectStudyTable"
       @submit="submitReservation"
     />
   </div>
@@ -125,6 +127,7 @@ export default {
     totalRooms() { return state.totalRooms; },
     availableSeats() { return state.availableSeats; },
     showReservationForm() { return state.showReservationForm; },
+    selectedRoomDetail() { return state.selectedRoomDetail; },
     reservationForm() { return state.reservationForm; },
     isSubmitting() { return state.isSubmitting; },
     formMessage() { return state.formMessage; },
@@ -224,6 +227,7 @@ export default {
     },
     openReservationForm(roomId) {
       mutations.showReservationForm(roomId);
+      apiService.loadRoomDetail(roomId).catch((error) => console.error("Room detail failed:", error));
     },
     closeReservationForm() {
       mutations.closeReservationForm();
@@ -236,6 +240,10 @@ export default {
       this.availabilityTimer = setTimeout(() => {
         apiService.checkRoomAvailability().catch((error) => console.error("Availability check failed:", error));
       }, 250);
+    },
+    selectStudyTable(tableId) {
+      mutations.selectStudyTable(tableId);
+      this.scheduleAvailabilityCheck();
     },
     async submitReservation() {
       if (!apiService.validateReservationForm()) {

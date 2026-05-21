@@ -32,6 +32,7 @@ export const state = reactive({
   health: null,
   socketMessages: [],
   rooms: [],
+  selectedRoomDetail: null,
   loadingRooms: false,
   totalRooms: 0,
   availableSeats: 0,
@@ -48,6 +49,7 @@ export const state = reactive({
   formMessageType: "success",
   reservationForm: {
     room_id: null,
+    study_table_id: null,
     start_time: "",
     end_time: "",
     reservation_type: "individual",
@@ -121,6 +123,7 @@ export const mutations = {
     state.authToken = "";
     state.currentUser = null;
     state.rooms = [];
+    state.selectedRoomDetail = null;
     state.totalRooms = 0;
     state.availableSeats = 0;
     state.showReservationForm = false;
@@ -143,6 +146,10 @@ export const mutations = {
     state.rooms = rooms;
   },
 
+  setSelectedRoomDetail(room) {
+    state.selectedRoomDetail = room;
+  },
+
   setLoadingRooms(loading) {
     state.loadingRooms = loading;
   },
@@ -163,7 +170,9 @@ export const mutations = {
 
   showReservationForm(roomId) {
     state.selectedRoomId = roomId;
+    state.selectedRoomDetail = null;
     state.reservationForm.room_id = roomId;
+    state.reservationForm.study_table_id = null;
     state.showReservationForm = true;
     state.formMessage = null;
     this.resetAvailabilityCheck();
@@ -171,6 +180,7 @@ export const mutations = {
 
   closeReservationForm() {
     state.showReservationForm = false;
+    state.selectedRoomDetail = null;
     this.resetForm();
     this.resetAvailabilityCheck();
   },
@@ -178,6 +188,7 @@ export const mutations = {
   resetForm() {
     state.reservationForm = {
       room_id: state.selectedRoomId,
+      study_table_id: null,
       start_time: "",
       end_time: "",
       reservation_type: "individual",
@@ -205,6 +216,11 @@ export const mutations = {
     state.availabilityCheck.result = result;
     state.availabilityCheck.message = result.message;
     state.availabilityCheck.type = result.available ? "success" : "error";
+  },
+
+  selectStudyTable(tableId) {
+    state.reservationForm.study_table_id = tableId;
+    state.formMessage = null;
   },
 
   setAvailabilityMessage(message, type = "info") {

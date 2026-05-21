@@ -80,6 +80,7 @@ router.get("/:id/availability", async (req, res, next) => {
     const startTime = req.query.start_time;
     const endTime = req.query.end_time;
     const seatsRequested = Number(req.query.seats_requested || 1);
+    const requestedTableId = req.query.study_table_id ? Number(req.query.study_table_id) : null;
 
     const [rooms] = await db.query(`
       SELECT sr.id
@@ -100,22 +101,36 @@ router.get("/:id/availability", async (req, res, next) => {
       return;
     }
 
-    const [availabilityRows] = await db.query(`
+    const [tables] = await db.query(`
       SELECT
-        COALESCE(SUM(st.seats_count), 0) AS available_seats,
-        COUNT(st.id) AS available_tables
+        st.id,
+        st.table_code,
+        st.seats_count,
+        st.has_power_outlet,
+        st.is_group_table,
+        st.status,
+        st.layout_x,
+        st.layout_y,
+        st.layout_width,
+        st.layout_height,
+        st.layout_rotation,
+        CASE
+          WHEN st.status = 'available'
+            AND st.seats_count >= :seatsRequested
+            AND conflicting_reservations.study_table_id IS NULL
+          THEN TRUE
+          ELSE FALSE
+        END AS is_available_for_slot
       FROM study_tables st
+      LEFT JOIN (
+        SELECT DISTINCT study_table_id
+        FROM reservations
+        WHERE status = 'active'
+          AND start_time < :endTime
+          AND end_time > :startTime
+      ) conflicting_reservations ON conflicting_reservations.study_table_id = st.id
       WHERE st.room_id = :roomId
-        AND st.status = 'available'
-        AND st.seats_count >= :seatsRequested
-        AND NOT EXISTS (
-          SELECT 1
-          FROM reservations r
-          WHERE r.study_table_id = st.id
-            AND r.status = 'active'
-            AND r.start_time < :endTime
-            AND r.end_time > :startTime
-        )
+      ORDER BY st.table_code
     `, {
       roomId,
       startTime,
@@ -123,15 +138,21 @@ router.get("/:id/availability", async (req, res, next) => {
       seatsRequested
     });
 
-    const availableSeats = Number(availabilityRows[0].available_seats);
-    const availableTables = Number(availabilityRows[0].available_tables);
-    const available = availableTables > 0;
+    const normalizedTables = tables.map(normalizeTable);
+    const matchingTables = requestedTableId
+      ? normalizedTables.filter((table) => table.id === requestedTableId)
+      : normalizedTables;
+    const availableTables = matchingTables.filter((table) => table.is_available_for_slot);
+    const availableSeats = availableTables.reduce((sum, table) => sum + table.seats_count, 0);
+    const available = availableTables.length > 0;
 
     res.json({
       room_id: roomId,
       available,
       available_seats: availableSeats,
-      available_tables: availableTables,
+      available_tables: availableTables.length,
+      selected_table_id: requestedTableId,
+      tables: normalizedTables,
       message: available
         ? "Disponibilita confermata per l'orario scelto."
         : "Non ci sono posti disponibili per l'aula e l'orario richiesti."
@@ -179,6 +200,11 @@ router.get("/:id", async (req, res, next) => {
         st.has_power_outlet,
         st.is_group_table,
         st.status,
+        st.layout_x,
+        st.layout_y,
+        st.layout_width,
+        st.layout_height,
+        st.layout_rotation,
         CASE
           WHEN blocking_reservations.study_table_id IS NULL THEN TRUE
           ELSE FALSE
@@ -196,10 +222,7 @@ router.get("/:id", async (req, res, next) => {
 
     res.json({
       ...normalizeRoom(rooms[0]),
-      tables: tables.map((table) => ({
-        ...table,
-        is_available_now: Boolean(table.is_available_now)
-      }))
+      tables: tables.map(normalizeTable)
     });
   } catch (error) {
     next(error);
@@ -208,6 +231,7 @@ router.get("/:id", async (req, res, next) => {
 
 function validateAvailabilityInput(roomId, query) {
   const seatsRequested = Number(query.seats_requested || 1);
+  const requestedTableId = query.study_table_id ? Number(query.study_table_id) : null;
   const startTime = new Date(query.start_time);
   const endTime = new Date(query.end_time);
 
@@ -227,7 +251,28 @@ function validateAvailabilityInput(roomId, query) {
     return "seats_requested deve essere un numero positivo.";
   }
 
+  if (query.study_table_id && (!Number.isInteger(requestedTableId) || requestedTableId <= 0)) {
+    return "study_table_id deve essere un numero positivo.";
+  }
+
   return null;
+}
+
+function normalizeTable(table) {
+  return {
+    ...table,
+    id: Number(table.id),
+    seats_count: Number(table.seats_count),
+    has_power_outlet: Boolean(table.has_power_outlet),
+    is_group_table: Boolean(table.is_group_table),
+    layout_x: Number(table.layout_x),
+    layout_y: Number(table.layout_y),
+    layout_width: Number(table.layout_width),
+    layout_height: Number(table.layout_height),
+    layout_rotation: Number(table.layout_rotation),
+    is_available_now: table.is_available_now === undefined ? undefined : Boolean(table.is_available_now),
+    is_available_for_slot: table.is_available_for_slot === undefined ? undefined : Boolean(table.is_available_for_slot)
+  };
 }
 
 module.exports = router;
