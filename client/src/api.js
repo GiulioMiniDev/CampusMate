@@ -230,6 +230,55 @@ export const apiService = {
     });
   },
 
+  async checkRoomAvailability(form = state.reservationForm) {
+    if (!form.room_id || !form.start_time || !form.end_time || !form.seats_requested) {
+      mutations.resetAvailabilityCheck();
+      return null;
+    }
+
+    if (new Date(form.start_time) >= new Date(form.end_time)) {
+      mutations.setAvailabilityMessage("Seleziona un orario di fine successivo all'inizio.", "error");
+      return null;
+    }
+
+    mutations.setAvailabilityLoading(true);
+
+    return new Promise((resolve, reject) => {
+      const params = new URLSearchParams({
+        start_time: form.start_time,
+        end_time: form.end_time,
+        seats_requested: String(form.seats_requested)
+      });
+      const request = new XMLHttpRequest();
+      request.open("GET", `${state.apiBaseUrl}/api/rooms/${form.room_id}/availability?${params.toString()}`);
+
+      request.onreadystatechange = () => {
+        if (request.readyState !== 4) return;
+
+        mutations.setAvailabilityLoading(false);
+
+        if (request.status >= 200 && request.status < 300) {
+          const response = parseJsonResponse(request);
+          mutations.setAvailabilityResult(response);
+          resolve(response);
+          return;
+        }
+
+        const errorMessage = getErrorMessage(request, "Controllo disponibilita non riuscito.");
+        mutations.setAvailabilityMessage(errorMessage, "error");
+        reject(new Error(errorMessage));
+      };
+
+      request.onerror = () => {
+        mutations.setAvailabilityLoading(false);
+        mutations.setAvailabilityMessage("Errore di connessione durante il controllo disponibilita.", "error");
+        reject(new Error("Network error"));
+      };
+
+      request.send();
+    });
+  },
+
   validateReservationForm() {
     const form = state.reservationForm;
 

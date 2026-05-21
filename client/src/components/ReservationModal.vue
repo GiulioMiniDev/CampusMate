@@ -10,15 +10,38 @@
           {{ formMessage }}
         </div>
 
+        <div v-if="availability.loading" class="alert alert-info">
+          Controllo disponibilita in corso...
+        </div>
+
+        <div v-else-if="availability.message" :class="['alert', availability.type === 'success' ? 'alert-success' : availability.type === 'error' ? 'alert-danger' : 'alert-info']">
+          {{ availability.message }}
+          <span v-if="availability.result?.available">
+            Posti compatibili liberi: {{ availability.result.available_seats }}.
+          </span>
+        </div>
+
         <form @submit.prevent="$emit('submit')">
           <div class="mb-3">
             <label class="form-label">Inizio prenotazione</label>
-            <input v-model="form.start_time" type="datetime-local" class="form-control" required>
+            <input
+              v-model="form.start_time"
+              type="datetime-local"
+              class="form-control"
+              required
+              @change="$emit('check-availability')"
+            >
           </div>
 
           <div class="mb-3">
             <label class="form-label">Fine prenotazione</label>
-            <input v-model="form.end_time" type="datetime-local" class="form-control" required>
+            <input
+              v-model="form.end_time"
+              type="datetime-local"
+              class="form-control"
+              required
+              @change="$emit('check-availability')"
+            >
           </div>
 
           <div class="mb-3">
@@ -37,6 +60,7 @@
               class="form-control"
               min="1"
               required
+              @change="$emit('check-availability')"
             >
           </div>
 
@@ -78,8 +102,12 @@ export default {
     formMessageType: {
       type: String,
       required: true
+    },
+    availability: {
+      type: Object,
+      required: true
     }
   },
-  emits: ["close", "submit"]
+  emits: ["check-availability", "close", "submit"]
 };
 </script>

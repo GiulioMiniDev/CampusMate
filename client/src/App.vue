@@ -75,6 +75,8 @@
       :is-submitting="isSubmitting"
       :form-message="formMessage"
       :form-message-type="formMessageType"
+      :availability="availabilityCheck"
+      @check-availability="scheduleAvailabilityCheck"
       @close="closeReservationForm"
       @submit="submitReservation"
     />
@@ -102,6 +104,7 @@ export default {
   },
   data() {
     return {
+      availabilityTimer: null,
       refreshTimer: null
     };
   },
@@ -125,7 +128,8 @@ export default {
     reservationForm() { return state.reservationForm; },
     isSubmitting() { return state.isSubmitting; },
     formMessage() { return state.formMessage; },
-    formMessageType() { return state.formMessageType; }
+    formMessageType() { return state.formMessageType; },
+    availabilityCheck() { return state.availabilityCheck; }
   },
   mounted() {
     this.initApp();
@@ -133,6 +137,10 @@ export default {
   beforeUnmount() {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
+    }
+
+    if (this.availabilityTimer) {
+      clearTimeout(this.availabilityTimer);
     }
 
     websocketService.disconnect();
@@ -220,8 +228,27 @@ export default {
     closeReservationForm() {
       mutations.closeReservationForm();
     },
+    scheduleAvailabilityCheck() {
+      if (this.availabilityTimer) {
+        clearTimeout(this.availabilityTimer);
+      }
+
+      this.availabilityTimer = setTimeout(() => {
+        apiService.checkRoomAvailability().catch((error) => console.error("Availability check failed:", error));
+      }, 250);
+    },
     async submitReservation() {
       if (!apiService.validateReservationForm()) {
+        return;
+      }
+
+      try {
+        const availability = await apiService.checkRoomAvailability();
+
+        if (availability && !availability.available) {
+          return;
+        }
+      } catch {
         return;
       }
 

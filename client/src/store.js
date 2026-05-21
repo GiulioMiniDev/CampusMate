@@ -38,6 +38,12 @@ export const state = reactive({
   showReservationForm: false,
   selectedRoomId: null,
   isSubmitting: false,
+  availabilityCheck: {
+    loading: false,
+    result: null,
+    message: null,
+    type: "info"
+  },
   formMessage: null,
   formMessageType: "success",
   reservationForm: {
@@ -160,11 +166,13 @@ export const mutations = {
     state.reservationForm.room_id = roomId;
     state.showReservationForm = true;
     state.formMessage = null;
+    this.resetAvailabilityCheck();
   },
 
   closeReservationForm() {
     state.showReservationForm = false;
     this.resetForm();
+    this.resetAvailabilityCheck();
   },
 
   resetForm() {
@@ -177,6 +185,7 @@ export const mutations = {
       notes: ""
     };
     state.formMessage = null;
+    this.resetAvailabilityCheck();
   },
 
   setFormMessage(message, type = "success") {
@@ -186,6 +195,31 @@ export const mutations = {
 
   setIsSubmitting(submitting) {
     state.isSubmitting = submitting;
+  },
+
+  setAvailabilityLoading(loading) {
+    state.availabilityCheck.loading = loading;
+  },
+
+  setAvailabilityResult(result) {
+    state.availabilityCheck.result = result;
+    state.availabilityCheck.message = result.message;
+    state.availabilityCheck.type = result.available ? "success" : "error";
+  },
+
+  setAvailabilityMessage(message, type = "info") {
+    state.availabilityCheck.result = null;
+    state.availabilityCheck.message = message;
+    state.availabilityCheck.type = type;
+  },
+
+  resetAvailabilityCheck() {
+    state.availabilityCheck = {
+      loading: false,
+      result: null,
+      message: null,
+      type: "info"
+    };
   }
 };
 
