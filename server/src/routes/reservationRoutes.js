@@ -1,12 +1,14 @@
 const express = require("express");
 const db = require("../config/database");
+const { requireAuth } = require("../middleware/auth");
 
 function createReservationRoutes(websocketHub) {
   const router = express.Router();
 
   // Lista delle prenotazioni con qualche dato leggibile in più su utente, aula, edificio e tavolo
-  router.get("/", async (req, res, next) => {
+  router.get("/", requireAuth, async (req, res, next) => {
     try {
+      const visibilityFilter = req.auth.role === "admin" ? "" : "WHERE r.user_id = :userId";
       const [reservations] = await db.query(`
         SELECT
           r.id,
@@ -31,8 +33,9 @@ function createReservationRoutes(websocketHub) {
         INNER JOIN study_tables st ON st.id = r.study_table_id
         INNER JOIN study_rooms sr ON sr.id = st.room_id
         INNER JOIN buildings b ON b.id = sr.building_id
+        ${visibilityFilter}
         ORDER BY r.start_time DESC, r.id DESC
-      `);
+      `, { userId: req.auth.userId });
 
       res.json(reservations);
     } catch (error) {
@@ -41,7 +44,7 @@ function createReservationRoutes(websocketHub) {
   });
 
   // Crea una prenotazione scegliendo un tavolo libero nell'aula richiesta
-  router.post("/", async (req, res, next) => {
+  router.post("/", requireAuth, async (req, res, next) => {
     const validationError = validateReservationInput(req.body);
 
     if (validationError) {
@@ -54,7 +57,6 @@ function createReservationRoutes(websocketHub) {
     }
 
     const {
-      user_id: userId,
       room_id: roomId,
       study_table_id: requestedTableId,
       start_time: startTime,
@@ -63,6 +65,7 @@ function createReservationRoutes(websocketHub) {
       seats_requested: seatsRequested = 1,
       notes = null
     } = req.body;
+    const userId = req.auth.userId;
 
     // Uso una transazione per evitare prenotazioni doppie sullo stesso tavolo
     const connection = await db.getConnection();
@@ -233,17 +236,12 @@ function createReservationRoutes(websocketHub) {
 
 // Validazione base dei dati ricevuti dal client
 function validateReservationInput(body) {
-  const userId = Number(body.user_id);
   const roomId = Number(body.room_id);
   const requestedTableId = body.study_table_id === undefined ? null : Number(body.study_table_id);
   const seatsRequested = Number(body.seats_requested || 1);
   const startTime = new Date(body.start_time);
   const endTime = new Date(body.end_time);
   const reservationType = body.reservation_type || "individual";
-
-  if (!Number.isInteger(userId) || userId <= 0) {
-    return "user_id e obbligatorio e deve essere un numero positivo.";
-  }
 
   if (!Number.isInteger(roomId) || roomId <= 0) {
     return "room_id e obbligatorio e deve essere un numero positivo.";

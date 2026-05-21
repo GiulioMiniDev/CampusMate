@@ -2,6 +2,8 @@ require("dotenv").config({ quiet: true });
 
 const env = {
   port: Number(process.env.PORT || 8000),
+  authSecret: process.env.AUTH_SECRET || "campusmate-local-development-secret",
+  authTokenTtlSeconds: Number(process.env.AUTH_TOKEN_TTL_SECONDS || 60 * 60 * 24 * 7),
   db: {
     host: process.env.DB_HOST || "localhost",
     port: Number(process.env.DB_PORT || 3306),

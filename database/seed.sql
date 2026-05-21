@@ -4,6 +4,7 @@ INSERT INTO users (
     first_name,
     last_name,
     email,
+    password_hash,
     role,
     student_number,
     degree_course,
@@ -11,11 +12,11 @@ INSERT INTO users (
     phone,
     status
 ) VALUES
-('Mario', 'Rossi', 'mario.rossi@uniroma1.it', 'student', '1882451', 'Informatica', 2, '+39 333 111 2222', 'active'),
-('Giulia', 'Bianchi', 'giulia.bianchi@uniroma1.it', 'student', '1882452', 'Ingegneria Gestionale', 1, '+39 333 222 3333', 'active'),
-('Luca', 'Verdi', 'luca.verdi@uniroma1.it', 'student', '1882453', 'Economia', 3, NULL, 'active'),
-('Sara', 'Neri', 'sara.neri@uniroma1.it', 'student', '1882454', 'Medicina', 4, '+39 333 444 5555', 'active'),
-('Admin', 'CampusMate', 'admin@campusmate.local', 'admin', NULL, NULL, NULL, NULL, 'active');
+('Mario', 'Rossi', 'mario.rossi@uniroma1.it', 'scrypt$-3ZHn0WttRSorj080FSg3A$DhcMso_MI_q3uDM69tS4W21Z5X0v09ccz3CKEtdCPy1x5Cfp6TTTLxftRxLQYvlEJLHN2xmb41S-GfLLlaCG8g', 'student', '1882451', 'Informatica', 2, '+39 333 111 2222', 'active'),
+('Giulia', 'Bianchi', 'giulia.bianchi@uniroma1.it', 'scrypt$-3ZHn0WttRSorj080FSg3A$DhcMso_MI_q3uDM69tS4W21Z5X0v09ccz3CKEtdCPy1x5Cfp6TTTLxftRxLQYvlEJLHN2xmb41S-GfLLlaCG8g', 'student', '1882452', 'Ingegneria Gestionale', 1, '+39 333 222 3333', 'active'),
+('Luca', 'Verdi', 'luca.verdi@uniroma1.it', 'scrypt$-3ZHn0WttRSorj080FSg3A$DhcMso_MI_q3uDM69tS4W21Z5X0v09ccz3CKEtdCPy1x5Cfp6TTTLxftRxLQYvlEJLHN2xmb41S-GfLLlaCG8g', 'student', '1882453', 'Economia', 3, NULL, 'active'),
+('Sara', 'Neri', 'sara.neri@uniroma1.it', 'scrypt$-3ZHn0WttRSorj080FSg3A$DhcMso_MI_q3uDM69tS4W21Z5X0v09ccz3CKEtdCPy1x5Cfp6TTTLxftRxLQYvlEJLHN2xmb41S-GfLLlaCG8g', 'student', '1882454', 'Medicina', 4, '+39 333 444 5555', 'active'),
+('Admin', 'CampusMate', 'admin@campusmate.local', 'scrypt$Rk4AIE0Kb3t9h_ya1sIP-g$C4h6NzsEe6co-UJKpOFJOe2Ic5A5-69Vt1jhkChG9nDItBGfb1YU7vpHL3WgcI7ZwlEX1bzwo4y8ZrSsSeHP4w', 'admin', NULL, NULL, NULL, NULL, 'active');
 
 INSERT INTO buildings (
     name,

@@ -30,5 +30,8 @@ Di default il frontend parte su `http://localhost:5173`.
 ## Endpoint iniziali
 
 - `GET /api/health`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
 
-Le API per aule e prenotazioni verranno aggiunte nelle prossime fasi.
+La registrazione crea sempre utenti con ruolo `student`. Per leggere o creare prenotazioni serve inviare il token di login con header `Authorization: Bearer <token>`.

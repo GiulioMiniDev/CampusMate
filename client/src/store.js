@@ -1,8 +1,32 @@
 import { reactive } from "vue";
 
+const AUTH_STORAGE_KEY = "campusmate.auth";
+const storedAuth = readStoredAuth();
+
 export const state = reactive({
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
   websocketUrl: import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8000",
+  authToken: storedAuth?.token || "",
+  currentUser: storedAuth?.user || null,
+  authMode: "login",
+  authSubmitting: false,
+  authMessage: null,
+  authMessageType: "success",
+  loginForm: {
+    email: "",
+    password: ""
+  },
+  registerForm: {
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+    password_confirm: "",
+    student_number: "",
+    degree_course: "",
+    year_of_study: "",
+    phone: ""
+  },
   backendStatus: "offline",
   socketStatus: "disconnesso",
   health: null,
@@ -17,7 +41,6 @@ export const state = reactive({
   formMessage: null,
   formMessageType: "success",
   reservationForm: {
-    user_id: 1,
     room_id: null,
     start_time: "",
     end_time: "",
@@ -28,6 +51,16 @@ export const state = reactive({
 });
 
 export const getters = {
+  isAuthenticated() {
+    return Boolean(state.authToken && state.currentUser);
+  },
+
+  getCurrentUserName() {
+    if (!state.currentUser) return "";
+
+    return `${state.currentUser.first_name} ${state.currentUser.last_name}`;
+  },
+
   getRoomStatus(room) {
     if (room.available_seats === 0) return "Piena";
     if (room.available_seats < room.total_seats * 0.3) return "Quasi piena";
@@ -46,6 +79,52 @@ export const getters = {
 };
 
 export const mutations = {
+  setAuthMode(mode) {
+    state.authMode = mode;
+    state.authMessage = null;
+  },
+
+  setAuthSubmitting(submitting) {
+    state.authSubmitting = submitting;
+  },
+
+  setAuthMessage(message, type = "success") {
+    state.authMessage = message;
+    state.authMessageType = type;
+  },
+
+  setAuthSession(session) {
+    state.authToken = session.token;
+    state.currentUser = session.user;
+    state.authMessage = null;
+    state.loginForm.password = "";
+    state.registerForm.password = "";
+    state.registerForm.password_confirm = "";
+    persistAuth(session);
+  },
+
+  setCurrentUser(user) {
+    state.currentUser = user;
+    persistAuth({
+      token: state.authToken,
+      user
+    });
+  },
+
+  logout() {
+    state.authToken = "";
+    state.currentUser = null;
+    state.rooms = [];
+    state.totalRooms = 0;
+    state.availableSeats = 0;
+    state.showReservationForm = false;
+    state.selectedRoomId = null;
+    state.socketMessages = [];
+    state.socketStatus = "disconnesso";
+    state.formMessage = null;
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  },
+
   setBackendStatus(status) {
     state.backendStatus = status;
   },
@@ -90,7 +169,6 @@ export const mutations = {
 
   resetForm() {
     state.reservationForm = {
-      user_id: 1,
       room_id: state.selectedRoomId,
       start_time: "",
       end_time: "",
@@ -110,3 +188,15 @@ export const mutations = {
     state.isSubmitting = submitting;
   }
 };
+
+function readStoredAuth() {
+  try {
+    return JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function persistAuth(session) {
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+}

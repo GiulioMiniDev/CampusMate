@@ -66,3 +66,20 @@ VITE_WEBSOCKET_URL=ws://localhost:8000
 ```
 
 La cartella `client/dist/` viene generata da `npm run build` e non va modificata a mano.
+
+## Login e registrazione
+
+La registrazione crea sempre account con ruolo `student`.
+
+Account demo dopo un reset del database:
+
+- Studente: `mario.rossi@uniroma1.it` / `student123`
+- Admin seed: `admin@campusmate.local` / `admin123`
+
+Endpoint principali:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+
+Per leggere o creare prenotazioni il client invia il token con header `Authorization: Bearer <token>`.
