@@ -23,7 +23,14 @@ export const websocketService = {
       try {
         const message = JSON.parse(event.data);
 
-        if (message.type === "reservation_updated" || message.type === "room_updated") {
+        const refreshEvents = [
+          "reservation.created",
+          "reservation_updated",
+          "room.availability.changed",
+          "room_updated"
+        ];
+
+        if (refreshEvents.includes(message.type)) {
           apiService.loadRooms().catch((error) => console.error("Error reloading rooms:", error));
         }
       } catch {
