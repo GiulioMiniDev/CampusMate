@@ -8,7 +8,31 @@ CampusMate e una dashboard web per monitorare in tempo reale la disponibilita de
 - Server: Node.js, Express, WebSocket
 - Database: MySQL
 
-## Avvio in sviluppo
+## Avvio rapido cross-platform
+
+Serve avere installati:
+
+- Docker Desktop
+- Node.js
+- npm
+
+Da Windows, macOS o Linux:
+
+```bash
+node start-campusmate.js
+```
+
+Lo script avvia Docker MySQL, importa schema e seed se il database e vuoto, installa le dipendenze, avvia backend e frontend, poi apre l'app.
+
+Opzioni utili:
+
+```bash
+node start-campusmate.js --reset-db
+node start-campusmate.js --skip-install
+node start-campusmate.js --no-browser
+```
+
+## Avvio manuale in sviluppo
 
 Avviare prima il backend:
 
