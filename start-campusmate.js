@@ -206,12 +206,53 @@ function initializeDatabase() {
     mysqlExec(fs.readFileSync(schemaPath, "utf8"));
     mysqlExec(fs.readFileSync(seedPath, "utf8"));
     ok("Database campusmate importato da schema.sql e seed.sql");
+    ensureBuildingMetadataColumns();
     ensureTableLayoutColumns();
     return;
   }
 
   ok("Database campusmate gia inizializzato");
+  ensureBuildingMetadataColumns();
   ensureTableLayoutColumns();
+}
+
+function ensureBuildingMetadataColumns() {
+  const requiredColumns = [
+    ["image_url", "VARCHAR(500) NULL"],
+    ["latitude", "DECIMAL(9,6) NULL"],
+    ["longitude", "DECIMAL(9,6) NULL"],
+    ["weekday_hours", "VARCHAR(80) NULL"],
+    ["weekend_hours", "VARCHAR(80) NULL"],
+    ["services", "JSON NULL"]
+  ];
+
+  const missingColumns = requiredColumns.filter(([columnName]) => {
+    const output = run("docker", [
+      "exec",
+      config.containerName,
+      "mysql",
+      "-uroot",
+      "-N",
+      "-B",
+      "-e",
+      `SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'campusmate' AND table_name = 'buildings' AND column_name = '${columnName}';`
+    ]).trim();
+
+    return Number(output || 0) === 0;
+  });
+
+  if (missingColumns.length === 0) {
+    ok("Campi metadati edifici gia presenti");
+    return;
+  }
+
+  mysqlExec(`
+    USE campusmate;
+    ALTER TABLE buildings
+      ${missingColumns.map(([columnName, definition]) => `ADD COLUMN ${columnName} ${definition}`).join(",\n      ")};
+  `);
+
+  ok("Campi metadati edifici aggiunti al database esistente");
 }
 
 function ensureTableLayoutColumns() {

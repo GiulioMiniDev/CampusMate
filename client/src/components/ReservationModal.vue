@@ -2,7 +2,12 @@
   <div class="modal-overlay" @click.self="$emit('close')">
     <div class="reservation-modal">
       <div class="modal-header">
-        <h5 class="modal-title">Prenota aula</h5>
+        <div>
+          <h5 class="modal-title">Prenota aula</h5>
+          <p v-if="room" class="modal-subtitle">
+            {{ room.building_code }} - {{ room.name }} - Piano {{ room.floor }}
+          </p>
+        </div>
         <button type="button" class="btn-close" aria-label="Chiudi" @click="$emit('close')"></button>
       </div>
       <div class="modal-body">

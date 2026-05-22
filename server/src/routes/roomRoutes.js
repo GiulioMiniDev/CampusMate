@@ -12,6 +12,15 @@ const roomSelect = `
     sr.name,
     b.name AS building,
     b.id AS building_id,
+    b.code AS building_code,
+    b.address,
+    b.campus_area,
+    b.image_url,
+    b.latitude,
+    b.longitude,
+    b.weekday_hours,
+    b.weekend_hours,
+    b.services,
     sr.floor_label AS floor,
     sr.room_code,
     sr.description,
@@ -43,7 +52,10 @@ function normalizeRoom(room) {
   return {
     ...room,
     total_seats: Number(room.total_seats),
-    available_seats: Number(room.available_seats)
+    available_seats: Number(room.available_seats),
+    latitude: room.latitude === null || room.latitude === undefined ? null : Number(room.latitude),
+    longitude: room.longitude === null || room.longitude === undefined ? null : Number(room.longitude),
+    services: normalizeServices(room.services)
   };
 }
 
@@ -273,6 +285,22 @@ function normalizeTable(table) {
     is_available_now: table.is_available_now === undefined ? undefined : Boolean(table.is_available_now),
     is_available_for_slot: table.is_available_for_slot === undefined ? undefined : Boolean(table.is_available_for_slot)
   };
+}
+
+function normalizeServices(services) {
+  if (!services) {
+    return [];
+  }
+
+  if (Array.isArray(services)) {
+    return services;
+  }
+
+  try {
+    return JSON.parse(services);
+  } catch {
+    return [];
+  }
 }
 
 module.exports = router;

@@ -23,13 +23,20 @@ INSERT INTO buildings (
     code,
     address,
     campus_area,
+    image_url,
+    latitude,
+    longitude,
+    weekday_hours,
+    weekend_hours,
+    services,
     opening_time,
     closing_time,
     status
 ) VALUES
-('Edificio Marco Polo', 'MP', 'Circonvallazione Tiburtina 4, Roma', 'San Lorenzo', '08:00:00', '20:00:00', 'open'),
-('Biblioteca Centrale', 'BC', 'Piazzale Aldo Moro 5, Roma', 'Citta Universitaria', '08:30:00', '22:00:00', 'open'),
-('Edificio Fermi', 'EF', 'Piazzale Aldo Moro 5, Roma', 'Citta Universitaria', '09:00:00', '19:00:00', 'open');
+('Facolta di Economia - Palazzo del Castro', 'RM019', 'Via del Castro Laurenziano 9, 00161 Roma', 'Castro Laurenziano', 'https://upload.wikimedia.org/wikipedia/commons/f/fd/Facolt%C3%A0_di_Economia_Universit%C3%A0_Sapienza_Roma.jpg', 41.903494, 12.516568, '08:30 - 20:00', 'Chiuso', JSON_ARRAY('Wi-Fi', 'Prese elettriche', 'Aria condizionata', 'Computer Lab'), '08:30:00', '20:00:00', 'open'),
+('Facolta di Architettura Valle Giulia', 'RM062', 'Via Antonio Gramsci 53, 00197 Roma', 'Valle Giulia', 'https://www.radiocolonna.it/public/images/2020/10/D940D26C-8E6B-49AF-B50C-C1B65A2E83D5-1280x720.jpeg', 41.918115, 12.477742, '09:00 - 19:30', 'Chiuso', JSON_ARRAY('Wi-Fi', 'Prese elettriche', 'Tavoli da disegno', 'Fotocopiatrici'), '09:00:00', '19:30:00', 'open'),
+('Facolta di Giurisprudenza (Citta Universitaria)', 'CU002', 'Piazzale Aldo Moro 5, 00185 Roma', 'Citta Universitaria', 'https://www.uniroma1.it/sites/default/files/styles/1150_300/public/giurisprudenza_3.jpg', 41.904012, 12.514105, '08:30 - 22:00', 'Sabato 08:30 - 13:30', JSON_ARRAY('Wi-Fi', 'Prese elettriche', 'Riscaldamento', 'Silenziatore acustico'), '08:30:00', '22:00:00', 'open'),
+('Sede di Via dei Sardi - San Lorenzo', 'RM035', 'Via dei Sardi 70, 00185 Roma', 'San Lorenzo', 'https://www.uniroma1.it/sites/default/files/styles/1150_300/public/psicologia_2.jpg', 41.897312, 12.519894, '09:00 - 19:00', 'Chiuso', JSON_ARRAY('Wi-Fi', 'Prese elettriche', 'Aria condizionata'), '09:00:00', '19:00:00', 'open');
 
 INSERT INTO study_rooms (
     building_id,
@@ -39,10 +46,13 @@ INSERT INTO study_rooms (
     description,
     status
 ) VALUES
-(1, 'Aula Studio Alfa', 'Piano 1', 'A101', 'Aula silenziosa per studio individuale.', 'open'),
-(1, 'Aula Studio Beta', 'Piano 2', 'A204', 'Aula mista con tavoli individuali e tavoli gruppo.', 'open'),
-(2, 'Sala Gruppi Gamma', 'Piano Terra', 'G01', 'Sala pensata per lavori di gruppo.', 'open'),
-(3, 'Aula Studio Delta', 'Piano 1', 'D110', 'Aula piccola vicino ai laboratori.', 'open');
+((SELECT id FROM buildings WHERE code = 'RM019'), 'Sala Lettura Centrale Gini', 'Terra', 'sala_lettura_centrale', 'Capienza dichiarata: 150 posti. Planimetria generata automaticamente dalla capienza Sapienza.', 'open'),
+((SELECT id FROM buildings WHERE code = 'RM019'), 'Sala Consultazione e Periodici', '1', 'sala_consultazione', 'Capienza dichiarata: 60 posti. Planimetria generata automaticamente dalla capienza Sapienza.', 'open'),
+((SELECT id FROM buildings WHERE code = 'RM062'), 'Sala Maggiore della Biblioteca', '1', 'biblioteca_centrale_arch', 'Capienza dichiarata: 70 posti. Planimetria generata automaticamente dalla capienza Sapienza.', 'open'),
+((SELECT id FROM buildings WHERE code = 'RM062'), 'Aula M4 (Libera consultazione)', 'Terra', 'emme_quattro', 'Capienza dichiarata: 25 posti. Planimetria generata automaticamente dalla capienza Sapienza.', 'open'),
+((SELECT id FROM buildings WHERE code = 'CU002'), 'Sala Diritto Privato', 'Terra', 'sala_diritto_privato', 'Capienza dichiarata: 100 posti. Planimetria generata automaticamente dalla capienza Sapienza.', 'open'),
+((SELECT id FROM buildings WHERE code = 'CU002'), 'Sala Diritto Pubblico', '1', 'sala_diritto_pubblico', 'Capienza dichiarata: 80 posti. Planimetria generata automaticamente dalla capienza Sapienza.', 'open'),
+((SELECT id FROM buildings WHERE code = 'RM035'), 'Sala Lettura Unificata', 'Terra', 'sardi_unica', 'Capienza dichiarata: 50 posti. Planimetria generata automaticamente dalla capienza Sapienza.', 'open');
 
 INSERT INTO study_tables (
     room_id,
@@ -56,31 +66,48 @@ INSERT INTO study_tables (
     layout_height,
     layout_rotation,
     status
-) VALUES
-(1, 'T1', 1, TRUE, FALSE, 18.00, 24.00, 13.00, 13.00, 0, 'available'),
-(1, 'T2', 1, TRUE, FALSE, 42.00, 24.00, 13.00, 13.00, 0, 'available'),
-(1, 'T3', 1, FALSE, FALSE, 18.00, 58.00, 13.00, 13.00, 0, 'available'),
-(1, 'T4', 1, FALSE, FALSE, 42.00, 58.00, 13.00, 13.00, 0, 'available'),
-(2, 'T1', 1, TRUE, FALSE, 12.00, 18.00, 12.00, 12.00, 0, 'available'),
-(2, 'T2', 1, TRUE, FALSE, 12.00, 44.00, 12.00, 12.00, 0, 'available'),
-(2, 'G1', 4, TRUE, TRUE, 46.00, 18.00, 27.00, 16.00, 0, 'available'),
-(2, 'G2', 4, TRUE, TRUE, 46.00, 54.00, 27.00, 16.00, 0, 'available'),
-(3, 'G1', 6, TRUE, TRUE, 16.00, 20.00, 31.00, 18.00, 0, 'available'),
-(3, 'G2', 6, TRUE, TRUE, 54.00, 20.00, 31.00, 18.00, 0, 'available'),
-(3, 'G3', 4, FALSE, TRUE, 34.00, 58.00, 29.00, 16.00, 0, 'available'),
-(4, 'T1', 1, TRUE, FALSE, 26.00, 28.00, 14.00, 14.00, 0, 'available'),
-(4, 'T2', 1, FALSE, FALSE, 58.00, 56.00, 14.00, 14.00, 0, 'available');
-
-INSERT INTO reservations (
-    user_id,
-    study_table_id,
-    start_time,
-    end_time,
-    reservation_type,
-    seats_requested,
-    status,
-    notes
-) VALUES
-(1, 1, '2026-04-23 09:00:00', '2026-04-23 11:00:00', 'individual', 1, 'active', 'Studio individuale mattina'),
-(2, 7, '2026-04-23 14:00:00', '2026-04-23 16:00:00', 'group', 3, 'active', 'Preparazione progetto di gruppo'),
-(3, 9, '2026-04-24 10:00:00', '2026-04-24 12:30:00', 'group', 4, 'active', NULL);
+)
+WITH RECURSIVE numbers AS (
+    SELECT 1 AS n
+    UNION ALL
+    SELECT n + 1 FROM numbers WHERE n < 60
+),
+room_capacity AS (
+    SELECT sr.id AS room_id, sr.room_code, 150 AS capacity FROM study_rooms sr WHERE sr.room_code = 'sala_lettura_centrale'
+    UNION ALL SELECT sr.id, sr.room_code, 60 FROM study_rooms sr WHERE sr.room_code = 'sala_consultazione'
+    UNION ALL SELECT sr.id, sr.room_code, 70 FROM study_rooms sr WHERE sr.room_code = 'biblioteca_centrale_arch'
+    UNION ALL SELECT sr.id, sr.room_code, 25 FROM study_rooms sr WHERE sr.room_code = 'emme_quattro'
+    UNION ALL SELECT sr.id, sr.room_code, 100 FROM study_rooms sr WHERE sr.room_code = 'sala_diritto_privato'
+    UNION ALL SELECT sr.id, sr.room_code, 80 FROM study_rooms sr WHERE sr.room_code = 'sala_diritto_pubblico'
+    UNION ALL SELECT sr.id, sr.room_code, 50 FROM study_rooms sr WHERE sr.room_code = 'sardi_unica'
+),
+table_grid AS (
+    SELECT
+        room_id,
+        capacity,
+        CEIL(capacity / 4) AS table_count,
+        CASE
+            WHEN CEIL(capacity / 4) <= 8 THEN 4
+            WHEN CEIL(capacity / 4) <= 18 THEN 5
+            ELSE 6
+        END AS columns_count
+    FROM room_capacity
+)
+SELECT
+    tg.room_id,
+    CONCAT('T', LPAD(numbers.n, 2, '0')) AS table_code,
+    CASE
+        WHEN numbers.n = tg.table_count AND MOD(tg.capacity, 4) <> 0 THEN MOD(tg.capacity, 4)
+        ELSE 4
+    END AS seats_count,
+    TRUE AS has_power_outlet,
+    TRUE AS is_group_table,
+    ROUND(7 + MOD(numbers.n - 1, tg.columns_count) * (84 / GREATEST(tg.columns_count - 1, 1)), 2) AS layout_x,
+    ROUND(12 + FLOOR((numbers.n - 1) / tg.columns_count) * (68 / GREATEST(CEIL(tg.table_count / tg.columns_count) - 1, 1)), 2) AS layout_y,
+    CASE WHEN tg.table_count > 24 THEN 10.00 ELSE 12.00 END AS layout_width,
+    CASE WHEN tg.table_count > 24 THEN 7.50 ELSE 9.00 END AS layout_height,
+    0 AS layout_rotation,
+    'available' AS status
+FROM table_grid tg
+INNER JOIN numbers ON numbers.n <= tg.table_count
+ORDER BY tg.room_id, numbers.n;

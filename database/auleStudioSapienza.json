@@ -1,0 +1,127 @@
+{
+  "universita": "Sapienza Università di Roma - Sedi Estese",
+  "aule_studio": [
+    {
+      "id": "sap_economia_castro",
+      "nome": "Biblioteca di Economia (Castro Laurenziano)",
+      "edificio_sigla": "RM019",
+      "edificio_nome": "Facoltà di Economia - Palazzo del Castro",
+      "indirizzo": "Via del Castro Laurenziano 9, 00161 Roma",
+      "immagine_copertina": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Facolt%C3%A0_di_Economia_Universit%C3%A0_Sapienza_Roma.jpg",
+      "posizione": {
+        "latitudine": 41.903494,
+        "longitudine": 12.516568
+      },
+      "orari": {
+        "feriali": "08:30 - 20:00",
+        "weekend": "Chiuso"
+      },
+      "servizi": ["Wi-Fi", "Prese elettriche", "Aria condizionata", "Computer Lab"],
+      "totale_posti": 210,
+      "composizione_aule": [
+        {
+          "aula_id": "sala_lettura_centrale",
+          "nome_aula": "Sala Lettura Centrale Gini",
+          "piano": "Terra",
+          "posti": 150
+        },
+        {
+          "aula_id": "sala_consultazione",
+          "nome_aula": "Sala Consultazione e Periodici",
+          "piano": "1",
+          "posti": 60
+        }
+      ]
+    },
+    {
+      "id": "sap_architettura_giulia",
+      "nome": "Sala Studio Architettura Valle Giulia",
+      "edificio_sigla": "RM062",
+      "edificio_nome": "Facoltà di Architettura Valle Giulia",
+      "indirizzo": "Via Antonio Gramsci 53, 00197 Roma",
+      "immagine_copertina": "https://www.radiocolonna.it/public/images/2020/10/D940D26C-8E6B-49AF-B50C-C1B65A2E83D5-1280x720.jpeg",
+      "posizione": {
+        "latitudine": 41.918115,
+        "longitudine": 12.477742
+      },
+      "orari": {
+        "feriali": "09:00 - 19:30",
+        "weekend": "Chiuso"
+      },
+      "servizi": ["Wi-Fi", "Prese elettriche", "Tavoli da disegno", "Fotocopiatrici"],
+      "totale_posti": 95,
+      "composizione_aule": [
+        {
+          "aula_id": "biblioteca_centrale_arch",
+          "nome_aula": "Sala Maggiore della Biblioteca",
+          "piano": "1",
+          "posti": 70
+        },
+        {
+          "aula_id": "emme_quattro",
+          "nome_aula": "Aula M4 (Libera consultazione)",
+          "piano": "Terra",
+          "posti": 25
+        }
+      ]
+    },
+    {
+      "id": "sap_giurisprudenza_centrale",
+      "nome": "Biblioteca di Giurisprudenza",
+      "edificio_sigla": "CU002",
+      "edificio_nome": "Facoltà di Giurisprudenza (Città Universitaria)",
+      "indirizzo": "Piazzale Aldo Moro 5, 00185 Roma",
+      "immagine_copertina": "https://www.uniroma1.it/sites/default/files/styles/1150_300/public/giurisprudenza_3.jpg",
+      "posizione": {
+        "latitudine": 41.904012,
+        "longitudine": 12.514105
+      },
+      "orari": {
+        "feriali": "08:30 - 22:00",
+        "weekend": "Sabato 08:30 - 13:30"
+      },
+      "servizi": ["Wi-Fi", "Prese elettriche", "Riscaldamento", "Silenziatore acustico"],
+      "totale_posti": 180,
+      "composizione_aule": [
+        {
+          "aula_id": "sala_diritto_privato",
+          "nome_aula": "Sala Diritto Privato",
+          "piano": "Terra",
+          "posti": 100
+        },
+        {
+          "aula_id": "sala_diritto_pubblico",
+          "nome_aula": "Sala Diritto Pubblico",
+          "piano": "1",
+          "posti": 80
+        }
+      ]
+    },
+    {
+      "id": "sap_psicologia_de_lollis",
+      "nome": "Sala Studio Psicologia / Lettere (Via dei Sardi)",
+      "edificio_sigla": "RM035",
+      "edificio_nome": "Sede di Via dei Sardi - San Lorenzo",
+      "indirizzo": "Via dei Sardi 70, 00185 Roma",
+      "immagine_copertina": "https://www.uniroma1.it/sites/default/files/styles/1150_300/public/psicologia_2.jpg",
+      "posizione": {
+        "latitudine": 41.897312,
+        "longitudine": 12.519894
+      },
+      "orari": {
+        "feriali": "09:00 - 19:00",
+        "weekend": "Chiuso"
+      },
+      "servizi": ["Wi-Fi", "Prese elettriche", "Aria condizionata"],
+      "totale_posti": 50,
+      "composizione_aule": [
+        {
+          "aula_id": "sardi_unica",
+          "nome_aula": "Sala Lettura Unificata",
+          "piano": "Terra",
+          "posti": 50
+        }
+      ]
+    }
+  ]
+}

@@ -67,7 +67,7 @@ export default {
         top: `${table.layout_y}%`,
         width: `${table.layout_width}%`,
         height: `${table.layout_height}%`,
-        transform: `rotate(${table.layout_rotation}deg)`
+        transform: `translate(-50%, -50%) rotate(${table.layout_rotation}deg)`
       };
     }
   }
