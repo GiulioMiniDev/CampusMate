@@ -1,11 +1,16 @@
 <template>
   <div class="card shadow-sm h-100 room-card">
+    <div v-if="showPlaceholder" class="room-cover room-cover-placeholder">
+      <span>{{ room.building_code }}</span>
+    </div>
+
     <img
-      v-if="room.image_url"
+      v-else
       class="room-cover"
       :src="room.image_url"
       :alt="`Foto edificio ${room.building}`"
       loading="lazy"
+      @error="imageFailed = true"
     >
 
     <div class="card-body">
@@ -92,8 +97,16 @@ export default {
       required: true
     }
   },
+  data() {
+    return {
+      imageFailed: false
+    };
+  },
   emits: ["reserve"],
   computed: {
+    showPlaceholder() {
+      return !this.room.image_url || this.imageFailed;
+    },
     mapUrl() {
       if (!this.room.latitude || !this.room.longitude) {
         return null;

@@ -32,27 +32,45 @@
         <HeroStats :total-rooms="totalRooms" :available-seats="availableSeats" />
 
         <section class="mb-5">
-          <div class="d-flex align-items-center justify-content-between mb-4">
-            <h2 class="h3 mb-0">Aule studio disponibili</h2>
-            <small class="text-body-secondary">Visualizza e prenota</small>
-          </div>
-
           <div v-if="loadingRooms" class="alert alert-info">
             <div class="spinner-border spinner-border-sm me-2" role="status"></div>
             Caricamento aule...
           </div>
 
-          <div v-if="rooms.length && !loadingRooms" class="row g-3">
-            <div v-for="room in rooms" :key="room.id" class="col-lg-6">
-              <RoomCard
-                :room="room"
-                :status="getRoomStatus(room)"
-                :status-color="getRoomStatusColor(room)"
-                :progress-width="getRoomProgressWidth(room)"
-                @reserve="openReservationForm"
-              />
+          <template v-if="rooms.length && !loadingRooms">
+            <div class="view-switcher mb-4" role="group" aria-label="Scegli vista">
+              <button
+                type="button"
+                :class="['view-switcher-button', activeView === 'map' ? 'is-active' : '']"
+                @click="activeView = 'map'"
+              >
+                Mappa
+              </button>
+              <button
+                type="button"
+                :class="['view-switcher-button', activeView === 'list' ? 'is-active' : '']"
+                @click="activeView = 'list'"
+              >
+                Lista sedi
+              </button>
             </div>
-          </div>
+
+            <CampusMap
+              v-if="activeView === 'map'"
+              :rooms="rooms"
+              :selected-building-code="selectedBuildingCode"
+              @select-building="openBuildingReservation"
+              @clear-selection="clearBuildingSelection"
+            />
+
+            <LocationsList
+              v-else
+              :rooms="rooms"
+              :selected-building-code="selectedBuildingCode"
+              @clear-selection="clearBuildingSelection"
+              @reserve="openReservationForm"
+            />
+          </template>
 
           <div v-else-if="!loadingRooms" class="alert alert-secondary">
             Nessuna aula disponibile al momento.
@@ -77,7 +95,9 @@
       :form-message-type="formMessageType"
       :availability="availabilityCheck"
       :room="selectedRoomDetail"
+      :building-rooms="selectedBuildingRooms"
       @check-availability="scheduleAvailabilityCheck"
+      @change-room="changeReservationRoom"
       @close="closeReservationForm"
       @select-table="selectStudyTable"
       @submit="submitReservation"
@@ -87,10 +107,11 @@
 
 <script>
 import AuthPanel from "./components/AuthPanel.vue";
+import CampusMap from "./components/CampusMap.vue";
 import DiagnosticsPanel from "./components/DiagnosticsPanel.vue";
 import HeroStats from "./components/HeroStats.vue";
+import LocationsList from "./components/LocationsList.vue";
 import ReservationModal from "./components/ReservationModal.vue";
-import RoomCard from "./components/RoomCard.vue";
 import { apiService } from "./api.js";
 import { getters, mutations, state } from "./store.js";
 import { websocketService } from "./websocket.js";
@@ -99,15 +120,18 @@ export default {
   name: "App",
   components: {
     AuthPanel,
+    CampusMap,
     DiagnosticsPanel,
     HeroStats,
-    ReservationModal,
-    RoomCard
+    LocationsList,
+    ReservationModal
   },
   data() {
     return {
+      activeView: "map",
       availabilityTimer: null,
-      refreshTimer: null
+      refreshTimer: null,
+      selectedBuildingCode: null
     };
   },
   computed: {
@@ -132,7 +156,16 @@ export default {
     isSubmitting() { return state.isSubmitting; },
     formMessage() { return state.formMessage; },
     formMessageType() { return state.formMessageType; },
-    availabilityCheck() { return state.availabilityCheck; }
+    availabilityCheck() { return state.availabilityCheck; },
+    selectedBuildingRooms() {
+      const buildingCode = this.selectedBuildingCode || this.selectedRoomDetail?.building_code;
+
+      if (!buildingCode) {
+        return [];
+      }
+
+      return this.rooms.filter((room) => room.building_code === buildingCode);
+    }
   },
   mounted() {
     this.initApp();
@@ -216,14 +249,21 @@ export default {
       websocketService.disconnect();
       mutations.logout();
     },
-    getRoomStatus(room) {
-      return getters.getRoomStatus(room);
+    selectBuilding(buildingCode) {
+      this.selectedBuildingCode = buildingCode;
     },
-    getRoomStatusColor(room) {
-      return getters.getRoomStatusColor(room);
+    openBuildingReservation(buildingCode) {
+      const firstRoom = this.rooms.find((room) => room.building_code === buildingCode);
+
+      if (!firstRoom) {
+        return;
+      }
+
+      this.selectedBuildingCode = buildingCode;
+      this.openReservationForm(firstRoom.id);
     },
-    getRoomProgressWidth(room) {
-      return getters.getRoomProgressWidth(room);
+    clearBuildingSelection() {
+      this.selectedBuildingCode = null;
     },
     openReservationForm(roomId) {
       mutations.showReservationForm(roomId);
@@ -231,6 +271,9 @@ export default {
     },
     closeReservationForm() {
       mutations.closeReservationForm();
+    },
+    changeReservationRoom(roomId) {
+      this.openReservationForm(roomId);
     },
     scheduleAvailabilityCheck() {
       if (this.availabilityTimer) {

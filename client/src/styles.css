@@ -87,6 +87,341 @@ body {
   background: #e2e8f0;
 }
 
+.room-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, rgba(13, 110, 253, 0.08), transparent 36%),
+    linear-gradient(160deg, #f8fafc 0%, #e8eef6 100%);
+  color: #475569;
+}
+
+.room-cover-placeholder span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.25rem;
+  height: 4.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.86);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.view-switcher {
+  display: inline-flex;
+  gap: 0.25rem;
+  border: 1px solid var(--cm-border);
+  border-radius: 0.7rem;
+  padding: 0.25rem;
+  background: #ffffff;
+}
+
+.view-switcher-button {
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.view-switcher-button.is-active {
+  background: #0d6efd;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(13, 110, 253, 0.18);
+}
+
+.campus-map {
+  border: 1px solid var(--cm-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #fbfcfe;
+  box-shadow: 0 14px 34px rgba(31, 41, 55, 0.06);
+}
+
+.campus-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem;
+  border-bottom: 1px solid var(--cm-border);
+  background: #ffffff;
+}
+
+.campus-map-kicker {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.campus-map-canvas {
+  min-height: 520px;
+  overflow: hidden;
+  background: #eef2f6;
+}
+
+.campus-map-canvas .leaflet-tile {
+  filter: grayscale(0.85) saturate(0.35) contrast(0.96) brightness(1.03);
+}
+
+.leaflet-container {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.leaflet-popup-content {
+  display: grid;
+  gap: 0.28rem;
+  margin: 0.8rem 0.95rem;
+  color: #334155;
+  font-size: 0.82rem;
+}
+
+.leaflet-popup-content strong {
+  color: #1f2937;
+}
+
+.leaflet-popup-content span {
+  display: block;
+}
+
+.campus-leaflet-marker {
+  background: transparent;
+  border: 0;
+}
+
+.leaflet-building-pin {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.35rem auto;
+  align-items: center;
+  gap: 0.25rem;
+  justify-content: center;
+  width: 210px;
+  max-width: 210px;
+  height: 36px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  padding: 0 0.52rem;
+  background: #111827;
+  color: #ffffff;
+  box-shadow: 0 14px 26px rgba(17, 24, 39, 0.24);
+}
+
+.leaflet-building-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.leaflet-building-pin svg {
+  position: relative;
+  z-index: 1;
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.leaflet-building-pin svg path:first-child {
+  fill: rgba(255, 255, 255, 0.16);
+}
+
+.leaflet-building-pin strong {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.leaflet-building-pin.is-selected {
+  background: #0d6efd;
+  box-shadow: 0 0 0 5px rgba(13, 110, 253, 0.16), 0 14px 26px rgba(13, 110, 253, 0.26);
+}
+
+.campus-user-marker {
+  background: transparent;
+  border: 0;
+}
+
+.leaflet-user-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.16), 0 14px 26px rgba(22, 163, 74, 0.22);
+}
+
+.leaflet-user-pin i {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.reservation-building {
+  overflow: hidden;
+  border: 1px solid var(--cm-border);
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  background: #ffffff;
+}
+
+.reservation-building-cover {
+  width: 100%;
+  height: 190px;
+  display: block;
+  object-fit: cover;
+  background: #e2e8f0;
+}
+
+.reservation-building-info {
+  padding: 1rem;
+}
+
+.reservation-building-info h6 {
+  margin: 0;
+  color: var(--cm-ink);
+  font-size: 1rem;
+}
+
+.reservation-building-info p {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.84rem;
+}
+
+.locations-list {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.location-group {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  height: 320px;
+  overflow: hidden;
+  border: 1px solid var(--cm-border);
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(31, 41, 55, 0.05);
+}
+
+.location-cover {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  background: #e2e8f0;
+}
+
+.location-content {
+  min-width: 0;
+  padding: 1.25rem;
+  overflow: hidden;
+}
+
+.location-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.location-heading h3 {
+  margin: 0;
+  color: var(--cm-ink);
+  font-size: 1.15rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-heading p {
+  margin: 0.2rem 0 0;
+  color: #64748b;
+  font-size: 0.84rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-heading strong {
+  flex: 0 0 auto;
+  border: 1px solid #cce8d4;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background: #eef7f1;
+  color: #24633b;
+  font-size: 0.82rem;
+}
+
+.location-rooms {
+  display: grid;
+  gap: 0.55rem;
+  max-height: 118px;
+  margin-top: 1rem;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.location-room-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  background: #f8fafc;
+}
+
+.location-room-row strong,
+.location-room-row span {
+  display: block;
+}
+
+.location-room-row strong {
+  color: var(--cm-ink);
+  font-size: 0.86rem;
+}
+
+.location-room-row span,
+.location-room-actions small {
+  color: #64748b;
+  font-size: 0.74rem;
+}
+
+.location-room-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 0 0 auto;
+}
+
 .room-address {
   max-width: 42rem;
   color: #64748b;
@@ -381,6 +716,43 @@ body {
 
   .display-5 {
     font-size: 2rem;
+  }
+
+  .campus-map-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .campus-map-canvas {
+    min-height: 420px;
+  }
+
+  .leaflet-building-pin {
+    width: 160px;
+    max-width: 160px;
+  }
+
+  .location-group {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .location-cover {
+    height: 170px;
+  }
+
+  .location-heading {
+    flex-direction: column;
+  }
+
+  .location-rooms {
+    max-height: none;
+  }
+
+  .location-room-row,
+  .location-room-actions {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

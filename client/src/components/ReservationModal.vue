@@ -3,14 +3,42 @@
     <div class="reservation-modal">
       <div class="modal-header">
         <div>
-          <h5 class="modal-title">Prenota aula</h5>
-          <p v-if="room" class="modal-subtitle">
-            {{ room.building_code }} - {{ room.name }} - Piano {{ room.floor }}
+          <h5 class="modal-title">Prenota sede</h5>
+          <p v-if="building" class="modal-subtitle">
+            {{ building.code }} - {{ building.name }}
           </p>
         </div>
         <button type="button" class="btn-close" aria-label="Chiudi" @click="$emit('close')"></button>
       </div>
       <div class="modal-body">
+        <section v-if="building" class="reservation-building">
+          <div v-if="showBuildingPlaceholder" class="reservation-building-cover room-cover-placeholder">
+            <span>{{ building.code }}</span>
+          </div>
+          <img
+            v-else
+            class="reservation-building-cover"
+            :src="building.imageUrl"
+            :alt="`Foto edificio ${building.name}`"
+            @error="buildingImageFailed = true"
+          >
+
+          <div class="reservation-building-info">
+            <h6>{{ building.name }}</h6>
+            <p>{{ building.address }}</p>
+            <div class="room-meta">
+              <span v-if="building.campusArea">{{ building.campusArea }}</span>
+              <span v-if="building.weekdayHours">Feriali {{ building.weekdayHours }}</span>
+              <span v-if="building.weekendHours">Weekend {{ building.weekendHours }}</span>
+            </div>
+            <div v-if="building.services.length" class="room-services">
+              <span v-for="service in building.services" :key="service">
+                {{ service }}
+              </span>
+            </div>
+          </div>
+        </section>
+
         <div v-if="formMessage" :class="['alert', formMessageType === 'success' ? 'alert-success' : 'alert-danger']">
           {{ formMessage }}
         </div>
@@ -40,6 +68,19 @@
         </div>
 
         <form @submit.prevent="$emit('submit')">
+          <div v-if="buildingRooms.length" class="mb-3">
+            <label class="form-label">Aula</label>
+            <select
+              :value="form.room_id"
+              class="form-select"
+              @change="$emit('change-room', Number($event.target.value))"
+            >
+              <option v-for="buildingRoom in buildingRooms" :key="buildingRoom.id" :value="buildingRoom.id">
+                {{ buildingRoom.name }} - Piano {{ buildingRoom.floor }} - {{ buildingRoom.available_seats }}/{{ buildingRoom.total_seats }} posti
+              </option>
+            </select>
+          </div>
+
           <div class="mb-3">
             <label class="form-label">Inizio prenotazione</label>
             <input
@@ -133,10 +174,45 @@ export default {
     room: {
       type: Object,
       default: null
+    },
+    buildingRooms: {
+      type: Array,
+      default: () => []
     }
   },
-  emits: ["check-availability", "close", "select-table", "submit"],
+  emits: ["change-room", "check-availability", "close", "select-table", "submit"],
+  data() {
+    return {
+      buildingImageFailed: false
+    };
+  },
+  watch: {
+    "building.code"() {
+      this.buildingImageFailed = false;
+    }
+  },
   computed: {
+    building() {
+      const sourceRoom = this.room || this.buildingRooms[0];
+
+      if (!sourceRoom) {
+        return null;
+      }
+
+      return {
+        code: sourceRoom.building_code,
+        name: sourceRoom.building,
+        address: sourceRoom.address,
+        campusArea: sourceRoom.campus_area,
+        imageUrl: sourceRoom.image_url,
+        weekdayHours: sourceRoom.weekday_hours,
+        weekendHours: sourceRoom.weekend_hours,
+        services: sourceRoom.services || []
+      };
+    },
+    showBuildingPlaceholder() {
+      return !this.building?.imageUrl || this.buildingImageFailed;
+    },
     floorplanTables() {
       return this.availability.result?.tables || this.room?.tables || [];
     }
