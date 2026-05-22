@@ -47,6 +47,10 @@ function run(command, commandArgs = [], runOptions = {}) {
   });
 }
 
+function mysqlClientArgs(extraArgs = []) {
+  return ["-uroot", "--protocol=TCP", "-h", "127.0.0.1", ...extraArgs];
+}
+
 function commandExists(command) {
   const checker = process.platform === "win32" ? "where" : "which";
 
@@ -166,7 +170,7 @@ async function waitForMysql() {
 
   for (let attempt = 0; attempt < 45; attempt += 1) {
     try {
-      run("docker", ["exec", config.containerName, "mysqladmin", "ping", "-uroot", "--silent"]);
+      run("docker", ["exec", config.containerName, "mysqladmin", ...mysqlClientArgs(["ping", "--silent"])]);
       ok("MySQL e pronto");
       return;
     } catch {
@@ -179,7 +183,7 @@ async function waitForMysql() {
 }
 
 function mysqlExec(sql) {
-  return run("docker", ["exec", "-i", config.containerName, "mysql", "-uroot"], {
+  return run("docker", ["exec", "-i", config.containerName, "mysql", ...mysqlClientArgs()], {
     input: sql
   });
 }
@@ -189,9 +193,7 @@ function getTableCount() {
     "exec",
     config.containerName,
     "mysql",
-    "-uroot",
-    "-N",
-    "-B",
+    ...mysqlClientArgs(["-N", "-B"]),
     "-e",
     "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'campusmate';"
   ]).trim();
@@ -231,9 +233,7 @@ function ensureBuildingMetadataColumns() {
       "exec",
       config.containerName,
       "mysql",
-      "-uroot",
-      "-N",
-      "-B",
+      ...mysqlClientArgs(["-N", "-B"]),
       "-e",
       `SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'campusmate' AND table_name = 'buildings' AND column_name = '${columnName}';`
     ]).trim();
@@ -260,9 +260,7 @@ function ensureTableLayoutColumns() {
     "exec",
     config.containerName,
     "mysql",
-    "-uroot",
-    "-N",
-    "-B",
+    ...mysqlClientArgs(["-N", "-B"]),
     "-e",
     "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'campusmate' AND table_name = 'study_tables' AND column_name = 'layout_x';"
   ]).trim();
