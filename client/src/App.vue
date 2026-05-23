@@ -7,7 +7,7 @@
           <span class="small text-body-secondary d-none d-sm-inline">
             {{ currentUserName }}
           </span>
-          <button type="button" class="btn btn-outline-secondary btn-sm" @click="logout">
+          <button type="button" class="cm-button cm-button-outline cm-button-sm" @click="logout">
             Esci
           </button>
         </div>
@@ -32,7 +32,7 @@
         <HeroStats :total-rooms="totalRooms" :available-seats="availableSeats" />
 
         <section class="mb-5">
-          <div v-if="loadingRooms" class="alert alert-info">
+          <div v-if="loadingRooms" class="cm-alert cm-alert-info">
             <div class="spinner-border spinner-border-sm me-2" role="status"></div>
             Caricamento aule...
           </div>
@@ -72,13 +72,13 @@
             />
           </template>
 
-          <div v-else-if="!loadingRooms" class="alert alert-secondary">
+          <div v-else-if="!loadingRooms" class="cm-alert cm-alert-muted">
             Nessuna aula disponibile al momento.
           </div>
         </section>
 
         <section v-if="socketStatus === 'errore' || socketStatus === 'chiuso'" class="mb-5">
-          <div class="alert alert-warning">
+          <div class="cm-alert cm-alert-warning">
             Aggiornamenti realtime non disponibili. La dashboard continua ad aggiornarsi periodicamente.
           </div>
         </section>

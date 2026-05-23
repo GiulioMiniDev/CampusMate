@@ -11,7 +11,7 @@
       <button
         v-if="selectedBuildingCode"
         type="button"
-        class="btn btn-outline-secondary btn-sm"
+        class="cm-button cm-button-outline cm-button-sm"
         @click="$emit('clear-selection')"
       >
         Tutte le sedi

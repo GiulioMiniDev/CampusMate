@@ -1,5 +1,5 @@
 <template>
-  <section class="hero-card rounded-4 p-4 p-md-5 mb-5">
+  <section class="hero-card cm-panel p-4 p-md-5 mb-5">
     <div class="row g-4 align-items-center">
       <div class="col-lg-7">
         <p class="text-uppercase small fw-semibold tracking mb-2">Dashboard realtime</p>
@@ -10,11 +10,11 @@
       </div>
       <div class="col-lg-5">
         <div class="stats-grid">
-          <article class="stat-card">
+          <article class="stat-card cm-card">
             <div class="stat-value">{{ totalRooms }}</div>
             <div class="stat-label">Aule disponibili</div>
           </article>
-          <article class="stat-card">
+          <article class="stat-card cm-card">
             <div class="stat-value">{{ availableSeats }}</div>
             <div class="stat-label">Posti liberi</div>
           </article>

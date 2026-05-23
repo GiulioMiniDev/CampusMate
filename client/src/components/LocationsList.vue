@@ -1,14 +1,14 @@
 <template>
   <section>
-    <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+    <div class="cm-section-header">
       <div>
         <h2 class="h3 mb-0">{{ title }}</h2>
-        <small class="text-body-secondary">{{ visibleBuildings.length }} sedi, {{ visibleRooms.length }} aule</small>
+        <small class="cm-section-kicker">{{ visibleBuildings.length }} sedi, {{ visibleRooms.length }} aule</small>
       </div>
       <button
         v-if="selectedBuildingCode"
         type="button"
-        class="btn btn-outline-secondary btn-sm"
+        class="cm-button cm-button-outline cm-button-sm"
         @click="$emit('clear-selection')"
       >
         Tutte le sedi
@@ -35,17 +35,17 @@
               <h3>{{ building.name }}</h3>
               <p>{{ building.code }} - {{ building.address }}</p>
             </div>
-            <strong>{{ building.availableSeats }}/{{ building.totalSeats }}</strong>
+            <strong class="cm-chip cm-chip-success">{{ building.availableSeats }}/{{ building.totalSeats }}</strong>
           </div>
 
-          <div class="room-meta">
-            <span v-if="building.campusArea">{{ building.campusArea }}</span>
-            <span v-if="building.weekdayHours">Feriali {{ building.weekdayHours }}</span>
-            <span v-if="building.weekendHours">Weekend {{ building.weekendHours }}</span>
+          <div class="room-meta cm-chip-set">
+            <span v-if="building.campusArea" class="cm-chip">{{ building.campusArea }}</span>
+            <span v-if="building.weekdayHours" class="cm-chip">Feriali {{ building.weekdayHours }}</span>
+            <span v-if="building.weekendHours" class="cm-chip">Weekend {{ building.weekendHours }}</span>
           </div>
 
-          <div v-if="building.services.length" class="room-services">
-            <span v-for="service in building.services" :key="service">
+          <div v-if="building.services.length" class="room-services cm-chip-set">
+            <span v-for="service in building.services" :key="service" class="cm-chip cm-chip-success">
               {{ service }}
             </span>
           </div>
@@ -60,7 +60,7 @@
                 <small>{{ room.available_seats }}/{{ room.total_seats }} posti</small>
                 <button
                   type="button"
-                  class="btn btn-primary btn-sm"
+                  class="cm-button cm-button-primary cm-button-sm"
                   :disabled="room.available_seats === 0"
                   @click="$emit('reserve', room.id)"
                 >

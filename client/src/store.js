@@ -76,9 +76,9 @@ export const getters = {
   },
 
   getRoomStatusColor(room) {
-    if (room.available_seats === 0) return "bg-danger";
-    if (room.available_seats < room.total_seats * 0.3) return "bg-warning";
-    return "bg-success";
+    if (room.available_seats === 0) return "cm-badge-danger";
+    if (room.available_seats < room.total_seats * 0.3) return "cm-badge-warning";
+    return "cm-badge-success";
   },
 
   getRoomProgressWidth(room) {

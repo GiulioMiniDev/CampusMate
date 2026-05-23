@@ -11,7 +11,7 @@
         <button type="button" class="btn-close" aria-label="Chiudi" @click="$emit('close')"></button>
       </div>
       <div class="modal-body">
-        <section v-if="building" class="reservation-building">
+        <section v-if="building" class="reservation-building cm-card">
           <div v-if="showBuildingPlaceholder" class="reservation-building-cover room-cover-placeholder">
             <span>{{ building.code }}</span>
           </div>
@@ -26,28 +26,28 @@
           <div class="reservation-building-info">
             <h6>{{ building.name }}</h6>
             <p>{{ building.address }}</p>
-            <div class="room-meta">
-              <span v-if="building.campusArea">{{ building.campusArea }}</span>
-              <span v-if="building.weekdayHours">Feriali {{ building.weekdayHours }}</span>
-              <span v-if="building.weekendHours">Weekend {{ building.weekendHours }}</span>
+            <div class="room-meta cm-chip-set">
+              <span v-if="building.campusArea" class="cm-chip">{{ building.campusArea }}</span>
+              <span v-if="building.weekdayHours" class="cm-chip">Feriali {{ building.weekdayHours }}</span>
+              <span v-if="building.weekendHours" class="cm-chip">Weekend {{ building.weekendHours }}</span>
             </div>
-            <div v-if="building.services.length" class="room-services">
-              <span v-for="service in building.services" :key="service">
+            <div v-if="building.services.length" class="room-services cm-chip-set">
+              <span v-for="service in building.services" :key="service" class="cm-chip cm-chip-success">
                 {{ service }}
               </span>
             </div>
           </div>
         </section>
 
-        <div v-if="formMessage" :class="['alert', formMessageType === 'success' ? 'alert-success' : 'alert-danger']">
+        <div v-if="formMessage" :class="['cm-alert', formMessageType === 'success' ? 'cm-alert-success' : 'cm-alert-danger']">
           {{ formMessage }}
         </div>
 
-        <div v-if="availability.loading" class="alert alert-info">
+        <div v-if="availability.loading" class="cm-alert cm-alert-info">
           Controllo disponibilita in corso...
         </div>
 
-        <div v-else-if="availability.message" :class="['alert', availability.type === 'success' ? 'alert-success' : availability.type === 'error' ? 'alert-danger' : 'alert-info']">
+        <div v-else-if="availability.message" :class="['cm-alert', availability.type === 'success' ? 'cm-alert-success' : availability.type === 'error' ? 'cm-alert-danger' : 'cm-alert-info']">
           {{ availability.message }}
           <span v-if="availability.result?.available">
             Posti compatibili liberi: {{ availability.result.available_seats }}.
@@ -63,16 +63,16 @@
           @select-table="$emit('select-table', $event)"
         />
 
-        <div v-else class="alert alert-secondary">
+        <div v-else class="cm-alert cm-alert-muted">
           Caricamento planimetria aula...
         </div>
 
         <form @submit.prevent="$emit('submit')">
           <div v-if="buildingRooms.length" class="mb-3">
-            <label class="form-label">Aula</label>
+            <label class="form-label cm-label">Aula</label>
             <select
               :value="form.room_id"
-              class="form-select"
+              class="form-select cm-field"
               @change="$emit('change-room', Number($event.target.value))"
             >
               <option v-for="buildingRoom in buildingRooms" :key="buildingRoom.id" :value="buildingRoom.id">
@@ -82,41 +82,41 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Inizio prenotazione</label>
+            <label class="form-label cm-label">Inizio prenotazione</label>
             <input
               v-model="form.start_time"
               type="datetime-local"
-              class="form-control"
+              class="form-control cm-field"
               required
               @change="$emit('check-availability')"
             >
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Fine prenotazione</label>
+            <label class="form-label cm-label">Fine prenotazione</label>
             <input
               v-model="form.end_time"
               type="datetime-local"
-              class="form-control"
+              class="form-control cm-field"
               required
               @change="$emit('check-availability')"
             >
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Tipo prenotazione</label>
-            <select v-model="form.reservation_type" class="form-select">
+            <label class="form-label cm-label">Tipo prenotazione</label>
+            <select v-model="form.reservation_type" class="form-select cm-field">
               <option value="individual">Individuale</option>
               <option value="group">Gruppo</option>
             </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Numero posti</label>
+            <label class="form-label cm-label">Numero posti</label>
             <input
               v-model.number="form.seats_requested"
               type="number"
-              class="form-control"
+              class="form-control cm-field"
               min="1"
               required
               @change="$emit('check-availability')"
@@ -124,15 +124,15 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Note (opzionale)</label>
-            <textarea v-model="form.notes" class="form-control" rows="2"></textarea>
+            <label class="form-label cm-label">Note (opzionale)</label>
+            <textarea v-model="form.notes" class="form-control cm-field" rows="2"></textarea>
           </div>
 
           <div class="d-flex gap-2 flex-wrap">
-            <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+            <button type="submit" class="cm-button cm-button-primary" :disabled="isSubmitting">
               {{ isSubmitting ? "Creazione..." : "Conferma prenotazione" }}
             </button>
-            <button type="button" class="btn btn-secondary" :disabled="isSubmitting" @click="$emit('close')">
+            <button type="button" class="cm-button cm-button-secondary" :disabled="isSubmitting" @click="$emit('close')">
               Annulla
             </button>
           </div>

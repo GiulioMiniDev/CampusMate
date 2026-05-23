@@ -3,7 +3,7 @@
     <h3 class="h5 mb-3">Diagnostica tecnica</h3>
     <div class="row g-3">
       <div class="col-lg-6">
-        <div class="card bg-light">
+        <div class="cm-card">
           <div class="card-body">
             <h6 class="card-subtitle mb-3 text-body-secondary">Risposta backend</h6>
             <div v-if="health" class="small code-block">
@@ -16,7 +16,7 @@
         </div>
       </div>
       <div class="col-lg-6">
-        <div class="card bg-light">
+        <div class="cm-card">
           <div class="card-body">
             <h6 class="card-subtitle mb-3 text-body-secondary">Messaggi WebSocket</h6>
             <div v-if="socketMessages.length" class="small code-block">

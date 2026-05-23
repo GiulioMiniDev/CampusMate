@@ -1,5 +1,5 @@
 <template>
-  <section class="floorplan-block">
+  <section class="floorplan-block cm-card">
     <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
       <div>
         <h6 class="mb-0">Planimetria aula</h6>

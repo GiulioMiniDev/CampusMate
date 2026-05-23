@@ -1,5 +1,5 @@
 <template>
-  <div class="card shadow-sm h-100 room-card">
+  <div class="cm-card h-100 room-card">
     <div v-if="showPlaceholder" class="room-cover room-cover-placeholder">
       <span>{{ room.building_code }}</span>
     </div>
@@ -24,7 +24,7 @@
             {{ room.address }}
           </p>
         </div>
-        <span :class="['badge', statusColor]">
+        <span :class="['cm-badge', statusColor]">
           {{ status }}
         </span>
       </div>
@@ -44,12 +44,13 @@
         </div>
       </div>
 
-      <div class="room-meta">
-        <span v-if="room.campus_area">{{ room.campus_area }}</span>
-        <span v-if="room.weekday_hours">Feriali {{ room.weekday_hours }}</span>
-        <span v-if="room.weekend_hours">Weekend {{ room.weekend_hours }}</span>
+      <div class="room-meta cm-chip-set">
+        <span v-if="room.campus_area" class="cm-chip">{{ room.campus_area }}</span>
+        <span v-if="room.weekday_hours" class="cm-chip">Feriali {{ room.weekday_hours }}</span>
+        <span v-if="room.weekend_hours" class="cm-chip">Weekend {{ room.weekend_hours }}</span>
         <a
           v-if="mapUrl"
+          class="cm-chip"
           :href="mapUrl"
           target="_blank"
           rel="noreferrer"
@@ -58,14 +59,14 @@
         </a>
       </div>
 
-      <div v-if="room.services?.length" class="room-services">
-        <span v-for="service in room.services" :key="service">
+      <div v-if="room.services?.length" class="room-services cm-chip-set">
+        <span v-for="service in room.services" :key="service" class="cm-chip cm-chip-success">
           {{ service }}
         </span>
       </div>
 
       <button
-        class="btn btn-primary btn-sm w-100 mt-3"
+        class="cm-button cm-button-primary cm-button-sm cm-button-block mt-3"
         type="button"
         :disabled="room.available_seats === 0"
         @click="$emit('reserve', room.id)"
