@@ -32,6 +32,9 @@ export const state = reactive({
   health: null,
   socketMessages: [],
   rooms: [],
+  reservations: [],
+  loadingReservations: false,
+  reservationsMessage: null,
   selectedRoomDetail: null,
   loadingRooms: false,
   totalRooms: 0,
@@ -83,6 +86,14 @@ export const getters = {
 
   getRoomProgressWidth(room) {
     return `${((room.total_seats - room.available_seats) / room.total_seats) * 100}%`;
+  },
+
+  getActiveReservations() {
+    const now = new Date();
+
+    return state.reservations
+      .filter((reservation) => reservation.status === "active" && new Date(reservation.end_time) > now)
+      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
   }
 };
 
@@ -123,6 +134,9 @@ export const mutations = {
     state.authToken = "";
     state.currentUser = null;
     state.rooms = [];
+    state.reservations = [];
+    state.loadingReservations = false;
+    state.reservationsMessage = null;
     state.selectedRoomDetail = null;
     state.totalRooms = 0;
     state.availableSeats = 0;
@@ -144,6 +158,18 @@ export const mutations = {
 
   setRooms(rooms) {
     state.rooms = rooms;
+  },
+
+  setReservations(reservations) {
+    state.reservations = reservations;
+  },
+
+  setLoadingReservations(loading) {
+    state.loadingReservations = loading;
+  },
+
+  setReservationsMessage(message) {
+    state.reservationsMessage = message;
   },
 
   setSelectedRoomDetail(room) {

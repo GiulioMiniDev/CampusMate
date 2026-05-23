@@ -1,15 +1,24 @@
 <template>
-  <div class="app-shell">
+  <div :class="['app-shell', isAuthenticated ? 'has-mobile-tabs' : '']">
     <nav class="navbar navbar-expand-lg border-bottom bg-white shadow-sm">
       <div class="container-fluid px-3 px-md-4">
         <span class="navbar-brand fw-semibold">CampusMate</span>
-        <div v-if="isAuthenticated" class="d-flex align-items-center gap-3">
-          <span class="small text-body-secondary d-none d-sm-inline">
-            {{ currentUserName }}
-          </span>
-          <button type="button" class="cm-button cm-button-outline cm-button-sm" @click="logout">
-            Esci
-          </button>
+        <div v-if="isAuthenticated" class="app-nav">
+          <RouterLink class="app-nav-link" to="/aule">
+            <MapPinned class="app-nav-icon" aria-hidden="true" />
+            <span>Aule</span>
+          </RouterLink>
+          <RouterLink class="app-nav-link" to="/prenotazioni">
+            <TicketCheck class="app-nav-icon" aria-hidden="true" />
+            <span>Prenotazioni</span>
+          </RouterLink>
+          <RouterLink class="app-nav-link" to="/account">
+            <UserRound class="app-nav-icon" aria-hidden="true" />
+            <span>Account</span>
+          </RouterLink>
+        </div>
+        <div v-if="isAuthenticated" class="app-userbar d-none d-md-flex">
+          <span class="small text-body-secondary">{{ currentUserName }}</span>
         </div>
       </div>
     </nav>
@@ -29,53 +38,7 @@
       />
 
       <template v-else>
-        <HeroStats :total-rooms="totalRooms" :available-seats="availableSeats" />
-
-        <section class="mb-5">
-          <div v-if="loadingRooms" class="cm-alert cm-alert-info">
-            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-            Caricamento aule...
-          </div>
-
-          <template v-if="rooms.length && !loadingRooms">
-            <div class="view-switcher mb-4" role="group" aria-label="Scegli vista">
-              <button
-                type="button"
-                :class="['view-switcher-button', activeView === 'map' ? 'is-active' : '']"
-                @click="activeView = 'map'"
-              >
-                Mappa
-              </button>
-              <button
-                type="button"
-                :class="['view-switcher-button', activeView === 'list' ? 'is-active' : '']"
-                @click="activeView = 'list'"
-              >
-                Lista sedi
-              </button>
-            </div>
-
-            <CampusMap
-              v-if="activeView === 'map'"
-              :rooms="rooms"
-              :selected-building-code="selectedBuildingCode"
-              @select-building="openBuildingReservation"
-              @clear-selection="clearBuildingSelection"
-            />
-
-            <LocationsList
-              v-else
-              :rooms="rooms"
-              :selected-building-code="selectedBuildingCode"
-              @clear-selection="clearBuildingSelection"
-              @reserve="openReservationForm"
-            />
-          </template>
-
-          <div v-else-if="!loadingRooms" class="cm-alert cm-alert-muted">
-            Nessuna aula disponibile al momento.
-          </div>
-        </section>
+        <RouterView @logout="logout" />
 
         <section v-if="socketStatus === 'errore' || socketStatus === 'chiuso'" class="mb-5">
           <div class="cm-alert cm-alert-warning">
@@ -106,11 +69,9 @@
 </template>
 
 <script>
+import { MapPinned, TicketCheck, UserRound } from "@lucide/vue";
 import AuthPanel from "./components/AuthPanel.vue";
-import CampusMap from "./components/CampusMap.vue";
 import DiagnosticsPanel from "./components/DiagnosticsPanel.vue";
-import HeroStats from "./components/HeroStats.vue";
-import LocationsList from "./components/LocationsList.vue";
 import ReservationModal from "./components/ReservationModal.vue";
 import { apiService } from "./api.js";
 import { getters, mutations, state } from "./store.js";
@@ -120,18 +81,16 @@ export default {
   name: "App",
   components: {
     AuthPanel,
-    CampusMap,
     DiagnosticsPanel,
-    HeroStats,
-    LocationsList,
-    ReservationModal
+    MapPinned,
+    ReservationModal,
+    TicketCheck,
+    UserRound
   },
   data() {
     return {
-      activeView: "map",
       availabilityTimer: null,
-      refreshTimer: null,
-      selectedBuildingCode: null
+      refreshTimer: null
     };
   },
   computed: {
@@ -147,9 +106,6 @@ export default {
     socketMessages() { return state.socketMessages; },
     socketStatus() { return state.socketStatus; },
     rooms() { return state.rooms; },
-    loadingRooms() { return state.loadingRooms; },
-    totalRooms() { return state.totalRooms; },
-    availableSeats() { return state.availableSeats; },
     showReservationForm() { return state.showReservationForm; },
     selectedRoomDetail() { return state.selectedRoomDetail; },
     reservationForm() { return state.reservationForm; },
@@ -158,7 +114,8 @@ export default {
     formMessageType() { return state.formMessageType; },
     availabilityCheck() { return state.availabilityCheck; },
     selectedBuildingRooms() {
-      const buildingCode = this.selectedBuildingCode || this.selectedRoomDetail?.building_code;
+      const buildingCode = this.selectedRoomDetail?.building_code
+        || this.rooms.find((room) => room.id === this.reservationForm.room_id)?.building_code;
 
       if (!buildingCode) {
         return [];
@@ -224,6 +181,7 @@ export default {
       try {
         await apiService.login();
         await this.startDashboard();
+        this.$router.push("/aule");
       } catch (error) {
         console.error("Login failed:", error);
       }
@@ -236,6 +194,7 @@ export default {
       try {
         await apiService.register();
         await this.startDashboard();
+        this.$router.push("/aule");
       } catch (error) {
         console.error("Registration failed:", error);
       }
@@ -248,32 +207,17 @@ export default {
 
       websocketService.disconnect();
       mutations.logout();
-    },
-    selectBuilding(buildingCode) {
-      this.selectedBuildingCode = buildingCode;
-    },
-    openBuildingReservation(buildingCode) {
-      const firstRoom = this.rooms.find((room) => room.building_code === buildingCode);
-
-      if (!firstRoom) {
-        return;
-      }
-
-      this.selectedBuildingCode = buildingCode;
-      this.openReservationForm(firstRoom.id);
-    },
-    clearBuildingSelection() {
-      this.selectedBuildingCode = null;
-    },
-    openReservationForm(roomId) {
-      mutations.showReservationForm(roomId);
-      apiService.loadRoomDetail(roomId).catch((error) => console.error("Room detail failed:", error));
+      this.$router.push("/aule");
     },
     closeReservationForm() {
       mutations.closeReservationForm();
     },
     changeReservationRoom(roomId) {
       this.openReservationForm(roomId);
+    },
+    openReservationForm(roomId) {
+      mutations.showReservationForm(roomId);
+      apiService.loadRoomDetail(roomId).catch((error) => console.error("Room detail failed:", error));
     },
     scheduleAvailabilityCheck() {
       if (this.availabilityTimer) {

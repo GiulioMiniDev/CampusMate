@@ -208,6 +208,48 @@ export const apiService = {
     });
   },
 
+  async loadReservations() {
+    mutations.setLoadingReservations(true);
+    mutations.setReservationsMessage(null);
+
+    return new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      request.open("GET", `${state.apiBaseUrl}/api/reservations`);
+      setAuthHeader(request);
+
+      request.onreadystatechange = () => {
+        if (request.readyState !== 4) return;
+
+        mutations.setLoadingReservations(false);
+
+        if (request.status >= 200 && request.status < 300) {
+          const reservations = parseJsonResponse(request) || [];
+          mutations.setReservations(reservations);
+          resolve(reservations);
+          return;
+        }
+
+        const errorMessage = getErrorMessage(request, "Prenotazioni non disponibili.");
+        mutations.setReservationsMessage(errorMessage);
+
+        if (request.status === 401) {
+          mutations.logout();
+          mutations.setAuthMessage("Sessione scaduta. Effettua di nuovo il login.", "error");
+        }
+
+        reject(new Error(errorMessage));
+      };
+
+      request.onerror = () => {
+        mutations.setLoadingReservations(false);
+        mutations.setReservationsMessage("Errore di connessione durante il caricamento prenotazioni.");
+        reject(new Error("Network error"));
+      };
+
+      request.send();
+    });
+  },
+
   async createReservation(reservationData) {
     mutations.setIsSubmitting(true);
 
@@ -225,6 +267,7 @@ export const apiService = {
         if (request.status >= 200 && request.status < 300) {
           const response = JSON.parse(request.responseText);
           mutations.setFormMessage("Prenotazione creata con successo.", "success");
+          this.loadReservations().catch((error) => console.error("Reservations reload failed:", error));
           resolve(response);
           return;
         }

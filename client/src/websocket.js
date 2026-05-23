@@ -32,6 +32,10 @@ export const websocketService = {
 
         if (refreshEvents.includes(message.type)) {
           apiService.loadRooms().catch((error) => console.error("Error reloading rooms:", error));
+
+          if (state.authToken) {
+            apiService.loadReservations().catch((error) => console.error("Error reloading reservations:", error));
+          }
         }
       } catch {
         mutations.addSocketMessage(event.data);
