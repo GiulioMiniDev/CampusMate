@@ -38,10 +38,14 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .app-shell > main {
   flex: 1;
+  overflow-x: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .navbar .container-fluid {
@@ -109,6 +113,7 @@ body {
   justify-content: center;
   gap: 0.4rem;
   min-height: 2.5rem;
+  min-width: 44px;
   border: 1px solid transparent;
   border-radius: var(--cm-radius-sm);
   padding: 0.55rem 0.95rem;
@@ -197,6 +202,14 @@ body {
   background: #ffffff;
   color: var(--cm-ink);
   transition: border-color var(--cm-transition), box-shadow var(--cm-transition);
+  font-size: 16px;
+}
+
+@media (max-width: 767.98px) {
+  .cm-field {
+    font-size: 16px;
+    padding: 0.6rem 0.75rem;
+  }
 }
 
 .cm-field:focus {
@@ -256,12 +269,13 @@ body {
   align-items: center;
   border: 1px solid #dbe4f0;
   border-radius: 999px;
-  padding: 0.22rem 0.5rem;
+  padding: 0.28rem 0.6rem;
   background: var(--cm-muted-soft);
   color: #475569;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   line-height: 1.2;
   text-decoration: none;
+  min-height: 28px;
 }
 
 .cm-chip-success {
@@ -314,6 +328,33 @@ body {
   background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
   border: 1px solid var(--cm-border);
   box-shadow: var(--cm-shadow-lg);
+  word-wrap: break-word;
+}
+
+@media (max-width: 767.98px) {
+  .hero-card {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero-card .row {
+    row-gap: 1.5rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .hero-card {
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero-card h1 {
+    font-size: 1.5rem;
+  }
+
+  .hero-card .lead {
+    font-size: 0.95rem;
+  }
 }
 
 .tracking {
@@ -352,6 +393,18 @@ body {
   transition: all 0.3s ease;
   border: 1px solid var(--cm-border);
   overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 767.98px) {
+  .room-card {
+    transition: none;
+  }
+
+  .room-card:active {
+    transform: translateY(-2px);
+  }
 }
 
 .room-card:hover {
@@ -369,6 +422,13 @@ body {
   display: block;
   object-fit: cover;
   background: #e2e8f0;
+  overflow: hidden;
+}
+
+@media (max-width: 767.98px) {
+  .room-cover {
+    height: 140px;
+  }
 }
 
 .room-cover-placeholder {
@@ -401,6 +461,20 @@ body {
   border-radius: 0.7rem;
   padding: 0.25rem;
   background: #ffffff;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 767.98px) {
+  .view-switcher {
+    width: 100%;
+  }
+
+  .view-switcher-button {
+    flex: 1;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.85rem;
+  }
 }
 
 .view-switcher-button {
@@ -446,6 +520,18 @@ body {
   min-height: 520px;
   overflow: hidden;
   background: #eef2f6;
+}
+
+@media (max-width: 767.98px) {
+  .campus-map-canvas {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .campus-map-canvas {
+    min-height: 280px;
+  }
 }
 
 .campus-map-canvas .leaflet-tile {
@@ -744,6 +830,12 @@ body {
   height: 8px;
 }
 
+@media (max-width: 767.98px) {
+  .progress {
+    height: 12px;
+  }
+}
+
 .spinner-border-sm {
   width: 1.2rem;
   height: 1.2rem;
@@ -810,6 +902,14 @@ body {
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  overflow-y: auto;
+}
+
+@media (max-width: 767.98px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
 }
 
 .reservation-modal {
@@ -820,6 +920,23 @@ body {
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@media (max-width: 767.98px) {
+  .reservation-modal {
+    max-height: 85vh;
+    width: calc(100% - 1rem);
+    border-radius: var(--cm-radius-md);
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
 }
 
 .modal-header {
@@ -889,6 +1006,12 @@ body {
     linear-gradient(180deg, rgba(148, 163, 184, 0.16) 1px, transparent 1px),
     #f8fafc;
   background-size: 24px 24px;
+}
+
+@media (max-width: 767.98px) {
+  .floorplan-canvas {
+    min-height: 200px;
+  }
 }
 
 .floorplan-door {
@@ -1153,20 +1276,22 @@ body {
 
   .app-nav-link {
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.15rem;
     min-width: 0;
     min-height: 3.4rem;
     border-radius: var(--cm-radius-sm);
-    padding: 0.35rem 0.25rem;
-    font-size: 0.72rem;
+    padding: 0.4rem 0.3rem;
+    font-size: 0.68rem;
     line-height: 1.1;
+    letter-spacing: 0.3px;
   }
 
   .app-nav-link span {
-    max-width: 100%;
+    max-width: 60px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    word-break: break-word;
   }
 
   .app-nav-link.router-link-active {
@@ -1230,7 +1355,7 @@ body {
   }
 
   .campus-map-canvas {
-    min-height: 420px;
+    min-height: 300px;
   }
 
   .leaflet-building-pin {
@@ -1241,6 +1366,7 @@ body {
   .location-group {
     grid-template-columns: 1fr;
     height: auto;
+    overflow: visible;
   }
 
   .location-cover {
@@ -1282,9 +1408,52 @@ body {
   .floorplan-table {
     font-size: 0.62rem;
     padding: 0.12rem;
+    min-width: 36px;
+    min-height: 36px;
   }
 
   .table-seats {
     display: none;
+  }
+}
+
+/* Tablet breakpoint 768px - 1024px */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .location-group {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .location-cover {
+    height: 200px;
+  }
+
+  .location-heading {
+    flex-direction: row;
+  }
+
+  .reservation-details {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+  }
+
+  .hero-card {
+    padding: 2rem 2.5rem;
+  }
+
+  .display-5 {
+    font-size: 2.5rem;
   }
 }
