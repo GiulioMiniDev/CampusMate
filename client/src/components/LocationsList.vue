@@ -42,65 +42,62 @@
             </div>
           </div>
 
-          <div v-if="expandedBuilding !== building.code" class="location-compact-meta" style="display: flex; gap: 12px; margin-top: 8px; align-items: center; font-size: 0.85rem; color: var(--cm-muted);">
-            <div v-if="building.weekdayHours" style="display: flex; gap: 4px; align-items: center;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              <span>{{ building.weekdayHours }} <span v-if="building.weekendHours">(W: {{ building.weekendHours }})</span></span>
-            </div>
-            <div v-if="building.services.length" class="location-service-icons">
-              <span
-                v-for="service in building.services"
-                :key="service"
-                class="location-service-icon"
-                :title="service"
-                :aria-label="service"
-                role="img"
-                v-html="getServiceIcon(service)"
-              ></span>
-            </div>
-          </div>
-
-          <div v-if="expandedBuilding !== building.code" class="location-compact-rooms">
-            <span class="compact-rooms-text">
-              <span v-for="(room, index) in building.rooms" :key="room.id">
-                {{ room.name }} ({{ room.available_seats }}/{{ room.total_seats }})<span v-if="index < building.rooms.length - 1">, </span>
-              </span>
-            </span>
-          </div>
-
-          <div v-show="expandedBuilding === building.code" class="location-expanded-content">
-            <div class="room-meta cm-chip-set">
-              <span v-if="building.campusArea" class="cm-chip">{{ building.campusArea }}</span>
-              <span v-if="building.weekdayHours" class="cm-chip">Feriali {{ building.weekdayHours }}</span>
-              <span v-if="building.weekendHours" class="cm-chip">Weekend {{ building.weekendHours }}</span>
-            </div>
-
-            <div v-if="building.services.length" class="room-services cm-chip-set">
-              <span v-for="service in building.services" :key="service" class="cm-chip cm-chip-success location-service-chip">
-                <span class="location-service-chip-icon" aria-hidden="true" v-html="getServiceIcon(service)"></span>
-                {{ service }}
-              </span>
-            </div>
-
-            <div class="location-rooms">
-              <div v-for="room in building.rooms" :key="room.id" class="location-room-row">
-                <div>
-                  <strong>{{ room.name }}</strong>
-                  <span>Piano {{ room.floor }} - {{ getRoomStatus(room) }}</span>
-                </div>
-                <div class="location-room-actions">
-                  <small>{{ room.available_seats }}/{{ room.total_seats }} posti</small>
-                  <button
-                    type="button"
-                    class="cm-button cm-button-primary cm-button-sm"
-                    :disabled="room.available_seats === 0"
-                    @click.stop="$emit('reserve', room.id)"
-                  >
-                    Prenota
-                  </button>
-                </div>
+          <div v-if="expandedBuilding !== building.code" class="location-compact-details">
+            <div class="location-compact-row">
+              <span class="location-compact-label">Orari</span>
+              <div class="location-compact-items">
+                <span v-if="building.weekdayHours" class="location-compact-pill">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="location-service-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  {{ building.weekdayHours }}
+                </span>
+                <span v-if="building.weekendHours" class="location-compact-pill">Weekend {{ building.weekendHours }}</span>
               </div>
             </div>
+
+            <div v-if="building.services.length" class="location-compact-row">
+              <span class="location-compact-label">Servizi</span>
+              <div class="location-compact-items">
+                <span v-for="service in building.services" :key="service" class="location-compact-pill location-compact-pill-success">
+                  <span class="location-service-chip-icon" aria-hidden="true" v-html="getServiceIcon(service)"></span>
+                  {{ service }}
+                </span>
+              </div>
+            </div>
+
+            <div class="location-compact-row">
+              <span class="location-compact-label">Aule</span>
+              <div class="location-room-chip-list">
+                <span v-for="room in building.rooms" :key="room.id" class="location-room-chip">
+                  <strong>{{ room.name }}</strong>
+                  <span>{{ room.available_seats }}/{{ room.total_seats }}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div v-show="expandedBuilding === building.code" class="location-expanded-content" @click.stop>
+          <div class="location-expanded-heading">
+            <span>Seleziona aula</span>
+            <small>{{ building.rooms.length }} aule, {{ building.availableSeats }}/{{ building.totalSeats }} posti liberi</small>
+          </div>
+
+          <div class="location-room-options">
+            <button
+              v-for="room in building.rooms"
+              :key="room.id"
+              type="button"
+              class="location-room-option"
+              :disabled="room.available_seats === 0"
+              @click.stop="$emit('reserve', room.id)"
+            >
+              <div>
+                <strong>{{ room.name }}</strong>
+                <span>Piano {{ room.floor }} - {{ getRoomStatus(room) }}</span>
+              </div>
+              <strong class="location-room-option-seats">{{ room.available_seats }}/{{ room.total_seats }}</strong>
+            </button>
           </div>
         </div>
       </article>
@@ -316,10 +313,147 @@ export default {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.location-compact-details {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+.location-compact-row {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+  min-width: 0;
+}
+.location-compact-label {
+  color: var(--cm-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+.location-compact-items,
+.location-room-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-width: 0;
+}
+.location-compact-pill,
+.location-room-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 100%;
+  border: 1px solid #dbe4f0;
+  border-radius: 999px;
+  padding: 0.18rem 0.48rem;
+  background: var(--cm-muted-soft);
+  color: #475569;
+  font-size: 0.74rem;
+  line-height: 1.25;
+}
+.location-compact-pill-success {
+  border-color: var(--cm-success-border);
+  background: var(--cm-success-soft);
+  color: var(--cm-success);
+}
+.location-room-chip strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #334155;
+  font-size: inherit;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.location-room-chip span {
+  flex: 0 0 auto;
+  color: var(--cm-muted);
+}
 .location-expanded-content {
-  margin-top: 1rem;
+  grid-column: 1 / -1;
+  margin-top: 0;
   border-top: 1px solid var(--cm-border);
-  padding-top: 1rem;
+  padding: 0.9rem 1.25rem 1.1rem;
+}
+.location-expanded-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+}
+.location-expanded-heading span {
+  color: var(--cm-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.location-expanded-heading small {
+  color: var(--cm-muted);
+  font-size: 0.76rem;
+}
+.location-room-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+.location-room-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+  border: 1px solid #dbe4f0;
+  border-radius: var(--cm-radius-sm);
+  padding: 0.65rem 0.75rem;
+  background: #ffffff;
+  color: inherit;
+  text-align: left;
+  transition: border-color var(--cm-transition), background-color var(--cm-transition), box-shadow var(--cm-transition), transform var(--cm-transition);
+}
+.location-room-option:hover:not(:disabled),
+.location-room-option:focus {
+  border-color: var(--cm-accent);
+  background: #f8fbff;
+  box-shadow: 0 8px 18px rgba(13, 110, 253, 0.08);
+  transform: translateY(-1px);
+}
+.location-room-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+.location-room-option div {
+  min-width: 0;
+}
+.location-room-option strong,
+.location-room-option span {
+  display: block;
+}
+.location-room-option div strong {
+  overflow: hidden;
+  color: var(--cm-ink);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.location-room-option div span {
+  margin-top: 0.12rem;
+  color: var(--cm-muted);
+  font-size: 0.74rem;
+}
+.location-room-option-seats {
+  flex: 0 0 auto;
+  border: 1px solid var(--cm-success-border);
+  border-radius: 999px;
+  padding: 0.28rem 0.5rem;
+  background: var(--cm-success-soft);
+  color: var(--cm-success);
+  font-size: 0.76rem;
 }
 .location-service-icons,
 .location-service-icon,
@@ -346,6 +480,17 @@ export default {
 @media (min-width: 1024px) {
   .location-group {
     grid-template-columns: 200px minmax(0, 1fr) !important; /* Smaller image width than before */
+  }
+}
+@media (max-width: 900px) {
+  .location-room-options {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 575.98px) {
+  .location-compact-row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
   }
 }
 </style>
