@@ -45,7 +45,7 @@ function createReservationRoutes(websocketHub) {
 
   // Crea una prenotazione scegliendo un tavolo libero nell'aula richiesta
   router.post("/", requireAuth, async (req, res, next) => {
-    const validationError = validateReservationInput(req.body);
+    const validationError = validateBookingParameters(req.body);
 
     if (validationError) {
       res.status(400).json({
@@ -235,43 +235,6 @@ function createReservationRoutes(websocketHub) {
 }
 
 // Validazione base dei dati ricevuti dal client
-function validateReservationInput(body) {
-  const roomId = Number(body.room_id);
-  const requestedTableId = body.study_table_id === undefined ? null : Number(body.study_table_id);
-  const seatsRequested = Number(body.seats_requested || 1);
-  const startTime = new Date(body.start_time);
-  const endTime = new Date(body.end_time);
-  const reservationType = body.reservation_type || "individual";
 
-  if (!Number.isInteger(roomId) || roomId <= 0) {
-    return "room_id e obbligatorio e deve essere un numero positivo.";
-  }
-
-  if (body.study_table_id !== undefined && (!Number.isInteger(requestedTableId) || requestedTableId <= 0)) {
-    return "study_table_id deve essere un numero positivo.";
-  }
-
-  if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
-    return "start_time ed end_time sono obbligatori e devono essere date valide.";
-  }
-
-  if (endTime <= startTime) {
-    return "end_time deve essere successivo a start_time.";
-  }
-
-  if (!["individual", "group"].includes(reservationType)) {
-    return "reservation_type deve essere individual oppure group.";
-  }
-
-  if (!Number.isInteger(seatsRequested) || seatsRequested <= 0) {
-    return "seats_requested deve essere un numero positivo.";
-  }
-
-  if (reservationType === "individual" && seatsRequested !== 1) {
-    return "Una prenotazione individuale deve richiedere 1 posto.";
-  }
-
-  return null;
-}
 
 module.exports = createReservationRoutes;

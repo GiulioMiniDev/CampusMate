@@ -1,302 +1,155 @@
 import { mutations, state } from "./store.js";
 
-function parseJsonResponse(request) {
-  if (!request.responseText) return null;
+async function makeRequest(method, endpoint, body = null, requireAuth = false) {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open(method, `${state.apiBaseUrl}${endpoint}`);
+    
+    if (body) {
+      request.setRequestHeader("Content-Type", "application/json");
+    }
+    
+    if (requireAuth && state.authToken) {
+      request.setRequestHeader("Authorization", `Bearer ${state.authToken}`);
+    }
 
-  return JSON.parse(request.responseText);
-}
+    request.onreadystatechange = () => {
+      if (request.readyState !== 4) return;
 
-function getErrorMessage(request, fallbackMessage) {
-  try {
-    const response = parseJsonResponse(request);
+      const isSuccess = request.status >= 200 && request.status < 300;
+      let responseData = null;
+      let errorMessage = "Errore di rete o del server";
 
-    return response?.error?.message || fallbackMessage;
-  } catch {
-    return fallbackMessage;
-  }
-}
+      if (request.responseText) {
+        try {
+          responseData = JSON.parse(request.responseText);
+          errorMessage = responseData?.error?.message || errorMessage;
+        } catch {
+          errorMessage = `Errore imprevisto dal server: ${request.status}`;
+        }
+      }
 
-function setAuthHeader(request) {
-  if (state.authToken) {
-    request.setRequestHeader("Authorization", `Bearer ${state.authToken}`);
-  }
+      if (isSuccess) {
+        resolve(responseData);
+      } else {
+        if (request.status === 401 && requireAuth) {
+           mutations.logout();
+           mutations.setAuthMessage("Sessione scaduta. Effettua di nuovo il login.", "error");
+        }
+        reject(new Error(errorMessage));
+      }
+    };
+
+    request.onerror = () => reject(new Error("Network error"));
+    request.send(body ? JSON.stringify(body) : null);
+  });
 }
 
 export const apiService = {
   async register() {
     mutations.setAuthSubmitting(true);
-
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.open("POST", `${state.apiBaseUrl}/api/auth/register`);
-      request.setRequestHeader("Content-Type", "application/json");
-
-      request.onreadystatechange = () => {
-        if (request.readyState !== 4) return;
-
-        mutations.setAuthSubmitting(false);
-
-        if (request.status >= 200 && request.status < 300) {
-          const session = parseJsonResponse(request);
-          mutations.setAuthSession(session);
-          resolve(session);
-          return;
-        }
-
-        const errorMessage = getErrorMessage(request, "Registrazione non riuscita.");
-        mutations.setAuthMessage(errorMessage, "error");
-        reject(new Error(errorMessage));
-      };
-
-      request.onerror = () => {
-        mutations.setAuthSubmitting(false);
-        mutations.setAuthMessage("Errore di connessione al server", "error");
-        reject(new Error("Network error"));
-      };
-
-      request.send(JSON.stringify(state.registerForm));
-    });
+    try {
+      const session = await makeRequest("POST", "/api/auth/register", state.registerForm);
+      mutations.setAuthSession(session);
+      return session;
+    } catch (error) {
+      mutations.setAuthMessage(error.message || "Registrazione non riuscita.", "error");
+      throw error;
+    } finally {
+      mutations.setAuthSubmitting(false);
+    }
   },
 
   async login() {
     mutations.setAuthSubmitting(true);
-
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.open("POST", `${state.apiBaseUrl}/api/auth/login`);
-      request.setRequestHeader("Content-Type", "application/json");
-
-      request.onreadystatechange = () => {
-        if (request.readyState !== 4) return;
-
-        mutations.setAuthSubmitting(false);
-
-        if (request.status >= 200 && request.status < 300) {
-          const session = parseJsonResponse(request);
-          mutations.setAuthSession(session);
-          resolve(session);
-          return;
-        }
-
-        const errorMessage = getErrorMessage(request, "Login non riuscito.");
-        mutations.setAuthMessage(errorMessage, "error");
-        reject(new Error(errorMessage));
-      };
-
-      request.onerror = () => {
-        mutations.setAuthSubmitting(false);
-        mutations.setAuthMessage("Errore di connessione al server", "error");
-        reject(new Error("Network error"));
-      };
-
-      request.send(JSON.stringify(state.loginForm));
-    });
+    try {
+      const session = await makeRequest("POST", "/api/auth/login", state.loginForm);
+      mutations.setAuthSession(session);
+      return session;
+    } catch (error) {
+      mutations.setAuthMessage(error.message || "Login non riuscito.", "error");
+      throw error;
+    } finally {
+      mutations.setAuthSubmitting(false);
+    }
   },
 
   async loadCurrentUser() {
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.open("GET", `${state.apiBaseUrl}/api/auth/me`);
-      setAuthHeader(request);
-
-      request.onreadystatechange = () => {
-        if (request.readyState !== 4) return;
-
-        if (request.status >= 200 && request.status < 300) {
-          const response = parseJsonResponse(request);
-          mutations.setCurrentUser(response.user);
-          resolve(response.user);
-          return;
-        }
-
-        mutations.logout();
-        reject(new Error(getErrorMessage(request, "Sessione non valida.")));
-      };
-
-      request.onerror = () => {
-        reject(new Error("Network error"));
-      };
-
-      request.send();
-    });
+    try {
+      const response = await makeRequest("GET", "/api/auth/me", null, true);
+      mutations.setCurrentUser(response.user);
+      return response.user;
+    } catch (error) {
+      mutations.logout();
+      throw new Error(error.message || "Sessione non valida.");
+    }
   },
 
   async loadHealth() {
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.open("GET", `${state.apiBaseUrl}/api/health`);
-
-      request.onreadystatechange = () => {
-        if (request.readyState !== 4) return;
-
-        if (request.status >= 200 && request.status < 300) {
-          const health = JSON.parse(request.responseText);
-          mutations.setHealth(health);
-          mutations.setBackendStatus("online");
-          resolve(health);
-          return;
-        }
-
-        mutations.setBackendStatus("offline");
-        reject(new Error("Health check failed"));
-      };
-
-      request.onerror = () => {
-        mutations.setBackendStatus("offline");
-        reject(new Error("Network error"));
-      };
-
-      request.send();
-    });
+    try {
+      const health = await makeRequest("GET", "/api/health");
+      mutations.setHealth(health);
+      mutations.setBackendStatus("online");
+      return health;
+    } catch (error) {
+      mutations.setBackendStatus("offline");
+      throw error;
+    }
   },
 
   async loadRooms() {
     mutations.setLoadingRooms(true);
-
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.open("GET", `${state.apiBaseUrl}/api/rooms`);
-
-      request.onreadystatechange = () => {
-        if (request.readyState !== 4) return;
-
-        mutations.setLoadingRooms(false);
-
-        if (request.status >= 200 && request.status < 300) {
-          const rooms = JSON.parse(request.responseText);
-          mutations.setRooms(rooms);
-          mutations.updateStats();
-          resolve(rooms);
-          return;
-        }
-
-        reject(new Error("Failed to load rooms"));
-      };
-
-      request.onerror = () => {
-        mutations.setLoadingRooms(false);
-        reject(new Error("Network error"));
-      };
-
-      request.send();
-    });
+    try {
+      const rooms = await makeRequest("GET", "/api/rooms");
+      mutations.setRooms(rooms);
+      mutations.updateStats();
+      return rooms;
+    } catch (error) {
+      throw new Error("Failed to load rooms");
+    } finally {
+      mutations.setLoadingRooms(false);
+    }
   },
 
   async loadRoomDetail(roomId) {
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.open("GET", `${state.apiBaseUrl}/api/rooms/${roomId}`);
-
-      request.onreadystatechange = () => {
-        if (request.readyState !== 4) return;
-
-        if (request.status >= 200 && request.status < 300) {
-          const room = parseJsonResponse(request);
-          mutations.setSelectedRoomDetail(room);
-          resolve(room);
-          return;
-        }
-
-        reject(new Error(getErrorMessage(request, "Dettaglio aula non disponibile.")));
-      };
-
-      request.onerror = () => {
-        reject(new Error("Network error"));
-      };
-
-      request.send();
-    });
+    try {
+      const room = await makeRequest("GET", `/api/rooms/${roomId}`);
+      mutations.setSelectedRoomDetail(room);
+      return room;
+    } catch (error) {
+      throw new Error(error.message || "Dettaglio aula non disponibile.");
+    }
   },
 
   async loadReservations() {
     mutations.setLoadingReservations(true);
     mutations.setReservationsMessage(null);
-
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.open("GET", `${state.apiBaseUrl}/api/reservations`);
-      setAuthHeader(request);
-
-      request.onreadystatechange = () => {
-        if (request.readyState !== 4) return;
-
-        mutations.setLoadingReservations(false);
-
-        if (request.status >= 200 && request.status < 300) {
-          const reservations = parseJsonResponse(request) || [];
-          mutations.setReservations(reservations);
-          resolve(reservations);
-          return;
-        }
-
-        const errorMessage = getErrorMessage(request, "Prenotazioni non disponibili.");
-        mutations.setReservationsMessage(errorMessage);
-
-        if (request.status === 401) {
-          mutations.logout();
-          mutations.setAuthMessage("Sessione scaduta. Effettua di nuovo il login.", "error");
-        }
-
-        reject(new Error(errorMessage));
-      };
-
-      request.onerror = () => {
-        mutations.setLoadingReservations(false);
-        mutations.setReservationsMessage("Errore di connessione durante il caricamento prenotazioni.");
-        reject(new Error("Network error"));
-      };
-
-      request.send();
-    });
+    try {
+      const reservations = await makeRequest("GET", "/api/reservations", null, true);
+      const data = reservations || [];
+      mutations.setReservations(data);
+      return data;
+    } catch (error) {
+      mutations.setReservationsMessage(error.message || "Prenotazioni non disponibili.");
+      throw error;
+    } finally {
+      mutations.setLoadingReservations(false);
+    }
   },
 
   async createReservation(reservationData) {
     mutations.setIsSubmitting(true);
-
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.open("POST", `${state.apiBaseUrl}/api/reservations`);
-      request.setRequestHeader("Content-Type", "application/json");
-      setAuthHeader(request);
-
-      request.onreadystatechange = () => {
-        if (request.readyState !== 4) return;
-
-        mutations.setIsSubmitting(false);
-
-        if (request.status >= 200 && request.status < 300) {
-          const response = JSON.parse(request.responseText);
-          mutations.setFormMessage("Prenotazione creata con successo.", "success");
-          this.loadReservations().catch((error) => console.error("Reservations reload failed:", error));
-          resolve(response);
-          return;
-        }
-
-        try {
-          const response = JSON.parse(request.responseText);
-          const errorMessage = response.error?.message || "Errore nella prenotazione";
-          mutations.setFormMessage(errorMessage, "error");
-
-          if (request.status === 401) {
-            mutations.logout();
-            mutations.setAuthMessage("Sessione scaduta. Effettua di nuovo il login.", "error");
-          }
-
-          reject(new Error(errorMessage));
-        } catch {
-          mutations.setFormMessage(`Errore: ${request.status}`, "error");
-          reject(new Error("Unknown error"));
-        }
-      };
-
-      request.onerror = () => {
-        mutations.setIsSubmitting(false);
-        mutations.setFormMessage("Errore di connessione al server", "error");
-        reject(new Error("Network error"));
-      };
-
-      request.send(JSON.stringify(reservationData));
-    });
+    try {
+      const response = await makeRequest("POST", "/api/reservations", reservationData, true);
+      mutations.setFormMessage("Prenotazione creata con successo.", "success");
+      this.loadReservations().catch((error) => console.error("Reservations reload failed:", error));
+      return response;
+    } catch (error) {
+      mutations.setFormMessage(error.message || "Errore nella prenotazione", "error");
+      throw error;
+    } finally {
+      mutations.setIsSubmitting(false);
+    }
   },
 
   async checkRoomAvailability(form = state.reservationForm) {
@@ -312,7 +165,7 @@ export const apiService = {
 
     mutations.setAvailabilityLoading(true);
 
-    return new Promise((resolve, reject) => {
+    try {
       const params = new URLSearchParams({
         start_time: form.start_time,
         end_time: form.end_time,
@@ -323,34 +176,15 @@ export const apiService = {
         params.set("study_table_id", String(form.study_table_id));
       }
 
-      const request = new XMLHttpRequest();
-      request.open("GET", `${state.apiBaseUrl}/api/rooms/${form.room_id}/availability?${params.toString()}`);
-
-      request.onreadystatechange = () => {
-        if (request.readyState !== 4) return;
-
-        mutations.setAvailabilityLoading(false);
-
-        if (request.status >= 200 && request.status < 300) {
-          const response = parseJsonResponse(request);
-          mutations.setAvailabilityResult(response);
-          resolve(response);
-          return;
-        }
-
-        const errorMessage = getErrorMessage(request, "Controllo disponibilita non riuscito.");
-        mutations.setAvailabilityMessage(errorMessage, "error");
-        reject(new Error(errorMessage));
-      };
-
-      request.onerror = () => {
-        mutations.setAvailabilityLoading(false);
-        mutations.setAvailabilityMessage("Errore di connessione durante il controllo disponibilita.", "error");
-        reject(new Error("Network error"));
-      };
-
-      request.send();
-    });
+      const response = await makeRequest("GET", `/api/rooms/${form.room_id}/availability?${params.toString()}`);
+      mutations.setAvailabilityResult(response);
+      return response;
+    } catch (error) {
+      mutations.setAvailabilityMessage(error.message || "Controllo disponibilita non riuscito.", "error");
+      throw error;
+    } finally {
+      mutations.setAvailabilityLoading(false);
+    }
   },
 
   validateReservationForm() {

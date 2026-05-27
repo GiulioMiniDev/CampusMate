@@ -1,5 +1,6 @@
 const express = require("express");
 const db = require("../config/database");
+const { validateBookingParameters } = require("../utils/validation");
 
 const router = express.Router();
 
@@ -78,7 +79,7 @@ router.get("/", async (req, res, next) => {
 router.get("/:id/availability", async (req, res, next) => {
   try {
     const roomId = Number(req.params.id);
-    const validationError = validateAvailabilityInput(roomId, req.query);
+    const validationError = validateBookingParameters({ room_id: roomId, ...req.query });
 
     if (validationError) {
       res.status(400).json({
@@ -241,34 +242,7 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-function validateAvailabilityInput(roomId, query) {
-  const seatsRequested = Number(query.seats_requested || 1);
-  const requestedTableId = query.study_table_id ? Number(query.study_table_id) : null;
-  const startTime = new Date(query.start_time);
-  const endTime = new Date(query.end_time);
 
-  if (!Number.isInteger(roomId) || roomId <= 0) {
-    return "ID aula non valido.";
-  }
-
-  if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
-    return "start_time ed end_time sono obbligatori e devono essere date valide.";
-  }
-
-  if (endTime <= startTime) {
-    return "end_time deve essere successivo a start_time.";
-  }
-
-  if (!Number.isInteger(seatsRequested) || seatsRequested <= 0) {
-    return "seats_requested deve essere un numero positivo.";
-  }
-
-  if (query.study_table_id && (!Number.isInteger(requestedTableId) || requestedTableId <= 0)) {
-    return "study_table_id deve essere un numero positivo.";
-  }
-
-  return null;
-}
 
 function normalizeTable(table) {
   return {
