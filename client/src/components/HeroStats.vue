@@ -1,24 +1,19 @@
 <template>
-  <section class="hero-card cm-panel p-4 p-md-5 mb-5">
-    <div class="row g-4 align-items-center">
-      <div class="col-lg-7">
-        <p class="text-uppercase small fw-semibold tracking mb-2">Dashboard realtime</p>
-        <h1 class="display-5 fw-bold mb-3">Prenota le tue aule studio</h1>
-        <p class="lead mb-0 text-body-secondary">
-          Visualizza la disponibilita in tempo reale e prenota il posto perfetto per studiare.
-        </p>
+  <section class="hero-card cm-panel mb-4">
+    <div class="hero-card-inner">
+      <div class="hero-copy">
+        <p class="text-uppercase fw-semibold tracking mb-1">Dashboard realtime</p>
+        <h1 class="fw-bold mb-0">Aule studio</h1>
       </div>
-      <div class="col-lg-5">
-        <div class="stats-grid">
-          <article class="stat-card cm-card">
-            <div class="stat-value">{{ totalRooms }}</div>
-            <div class="stat-label">Aule disponibili</div>
-          </article>
-          <article class="stat-card cm-card">
-            <div class="stat-value">{{ availableSeats }}</div>
-            <div class="stat-label">Posti liberi</div>
-          </article>
-        </div>
+      <div class="stats-grid">
+        <article class="stat-card cm-card">
+          <div class="stat-value">{{ totalRooms }}</div>
+          <div class="stat-label">Aule</div>
+        </article>
+        <article class="stat-card cm-card">
+          <div class="stat-value">{{ availableSeats }}</div>
+          <div class="stat-label">Posti</div>
+        </article>
       </div>
     </div>
   </section>

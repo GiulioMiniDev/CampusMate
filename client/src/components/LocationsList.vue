@@ -43,8 +43,11 @@
           </div>
 
           <div v-if="expandedBuilding !== building.code" class="location-compact-details">
-            <div class="location-compact-row">
-              <span class="location-compact-label">Orari</span>
+            <div class="location-compact-row location-compact-row-hours">
+              <span class="location-compact-label">
+                <svg xmlns="http://www.w3.org/2000/svg" class="location-compact-label-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>Orari</span>
+              </span>
               <div class="location-compact-items">
                 <span v-if="building.weekdayHours" class="location-compact-pill">
                   <svg xmlns="http://www.w3.org/2000/svg" class="location-service-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -54,8 +57,11 @@
               </div>
             </div>
 
-            <div v-if="building.services.length" class="location-compact-row">
-              <span class="location-compact-label">Servizi</span>
+            <div v-if="building.services.length" class="location-compact-row location-compact-row-services">
+              <span class="location-compact-label">
+                <svg xmlns="http://www.w3.org/2000/svg" class="location-compact-label-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4 8 4Z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                <span>Servizi</span>
+              </span>
               <div class="location-compact-items">
                 <span v-for="service in building.services" :key="service" class="location-compact-pill location-compact-pill-success">
                   <span class="location-service-chip-icon" aria-hidden="true" v-html="getServiceIcon(service)"></span>
@@ -64,8 +70,11 @@
               </div>
             </div>
 
-            <div class="location-compact-row">
-              <span class="location-compact-label">Aule</span>
+            <div class="location-compact-row location-compact-row-rooms">
+              <span class="location-compact-label">
+                <svg xmlns="http://www.w3.org/2000/svg" class="location-compact-label-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 7h8"></path><path d="M8 11h8"></path><path d="M8 15h5"></path></svg>
+                <span>Aule</span>
+              </span>
               <div class="location-room-chip-list">
                 <span v-for="room in building.rooms" :key="room.id" class="location-room-chip">
                   <strong>{{ room.name }}</strong>
@@ -326,12 +335,18 @@ export default {
   min-width: 0;
 }
 .location-compact-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   color: var(--cm-muted);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.03em;
   line-height: 1.7;
   text-transform: uppercase;
+}
+.location-compact-label-icon {
+  flex: 0 0 auto;
 }
 .location-compact-items,
 .location-room-chip-list {
@@ -488,9 +503,111 @@ export default {
   }
 }
 @media (max-width: 575.98px) {
-  .location-compact-row {
-    grid-template-columns: 1fr;
+  .locations-list {
+    gap: 0.65rem;
+  }
+
+  .location-group {
+    grid-template-columns: minmax(7.6rem, 38%) minmax(0, 1fr) !important;
+    border-radius: var(--cm-radius-sm);
+  }
+
+  .location-cover,
+  .room-cover-placeholder {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 9.25rem;
+    max-height: none !important;
+    align-self: stretch;
+    border-radius: 0;
+  }
+
+  .room-cover-placeholder span {
+    width: 3.8rem;
+    height: 3.8rem;
+    font-size: 0.82rem;
+  }
+
+  .location-content {
+    padding: 0.55rem 0.55rem 0.6rem;
+  }
+
+  .location-heading {
+    gap: 0.35rem;
+  }
+
+  .location-heading h3 {
+    font-size: 0.9rem;
+    line-height: 1.16;
+  }
+
+  .location-heading p {
+    margin-top: 0.08rem;
+    font-size: 0.68rem;
+  }
+
+  .location-heading strong {
+    padding: 0.18rem 0.42rem;
+    font-size: 0.68rem;
+  }
+
+  .location-heading svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .location-compact-details {
     gap: 0.2rem;
+    margin-top: 0.32rem;
+  }
+
+  .location-compact-row {
+    grid-template-columns: 1rem minmax(0, 1fr);
+    gap: 0.26rem;
+    align-items: start;
+  }
+
+  .location-compact-label {
+    justify-content: center;
+    padding-top: 0.1rem;
+    font-size: 0;
+    line-height: 1;
+  }
+
+  .location-compact-label-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .location-compact-items,
+  .location-room-chip-list {
+    gap: 0.2rem;
+  }
+
+  .location-compact-pill,
+  .location-room-chip {
+    gap: 0.18rem;
+    padding: 0.08rem 0.3rem;
+    font-size: 0.62rem;
+    line-height: 1.18;
+  }
+
+  :deep(.location-service-svg) {
+    width: 12px;
+    height: 12px;
+  }
+
+  .location-expanded-content {
+    padding: 0.7rem 0.75rem 0.8rem;
+  }
+
+  .location-expanded-heading {
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .location-room-option {
+    padding: 0.52rem 0.6rem;
   }
 }
 </style>
