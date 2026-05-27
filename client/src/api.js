@@ -97,8 +97,11 @@ export const apiService = {
     }
   },
 
-  async loadRooms() {
-    mutations.setLoadingRooms(true);
+  async loadRooms({ background = false } = {}) {
+    if (!background) {
+      mutations.setLoadingRooms(true);
+    }
+
     try {
       const rooms = await makeRequest("GET", "/api/rooms");
       mutations.setRooms(rooms);
@@ -107,7 +110,9 @@ export const apiService = {
     } catch (error) {
       throw new Error("Failed to load rooms");
     } finally {
-      mutations.setLoadingRooms(false);
+      if (!background) {
+        mutations.setLoadingRooms(false);
+      }
     }
   },
 

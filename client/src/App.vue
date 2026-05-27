@@ -138,6 +138,11 @@ export default {
 
     websocketService.disconnect();
   },
+  watch: {
+    socketStatus() {
+      this.syncFallbackRefresh();
+    }
+  },
   methods: {
     async initApp() {
       try {
@@ -163,10 +168,20 @@ export default {
       }
 
       websocketService.connect();
+      this.syncFallbackRefresh();
+    },
+    syncFallbackRefresh() {
+      const needsFallback = this.isAuthenticated && ["errore", "chiuso"].includes(this.socketStatus);
 
-      if (!this.refreshTimer) {
+      if (!needsFallback && this.refreshTimer) {
+        clearInterval(this.refreshTimer);
+        this.refreshTimer = null;
+        return;
+      }
+
+      if (needsFallback && !this.refreshTimer) {
         this.refreshTimer = setInterval(() => {
-          apiService.loadRooms().catch((error) => console.error("Auto-refresh failed:", error));
+          apiService.loadRooms({ background: true }).catch((error) => console.error("Auto-refresh failed:", error));
         }, 30000);
       }
     },
@@ -252,7 +267,7 @@ export default {
 
         setTimeout(() => {
           mutations.closeReservationForm();
-          apiService.loadRooms().catch((error) => console.error("Error reloading rooms:", error));
+          apiService.loadRooms({ background: true }).catch((error) => console.error("Error reloading rooms:", error));
         }, 1500);
       } catch (error) {
         console.error("Reservation failed:", error);
