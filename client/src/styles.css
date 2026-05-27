@@ -1669,15 +1669,27 @@ body {
   }
 
   .leaflet-building-pin {
-    width: 205px;
-    max-width: 205px;
-    gap: 0.28rem;
-    padding: 0.34rem 0.46rem;
+    width: min(270px, calc(100vw - 72px));
+    max-width: min(270px, calc(100vw - 72px));
+    gap: 0.34rem;
+    padding: 0.38rem 0.52rem;
   }
 
-  .leaflet-building-pin-services span:nth-child(n + 3),
+  .leaflet-building-pin-services {
+    flex-wrap: wrap;
+    max-width: 4.2rem;
+    row-gap: 0.12rem;
+  }
+
+  .leaflet-building-pin-services span,
   .leaflet-building-pin-services em {
-    display: none;
+    width: 1.14rem;
+    height: 1.14rem;
+  }
+
+  .leaflet-building-service-svg {
+    width: 11px !important;
+    height: 11px !important;
   }
 
   .location-group {
