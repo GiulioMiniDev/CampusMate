@@ -179,6 +179,16 @@ export default {
       return selectedBuilding ? selectedBuilding.name : "Lista sedi";
     }
   },
+  watch: {
+    selectedBuildingCode: {
+      immediate: true,
+      handler(code) {
+        if (code) {
+          this.expandedBuilding = code;
+        }
+      }
+    }
+  },
   methods: {
     toggleBuilding(code) {
       if (this.expandedBuilding === code) {

@@ -39,7 +39,7 @@
           v-if="activeView === 'map' && filteredRooms.length"
           :rooms="filteredRooms"
           :selected-building-code="selectedBuildingCode"
-          @select-building="openBuildingReservation"
+          @select-building="selectBuildingFromMap"
           @clear-selection="clearBuildingSelection"
         />
 
@@ -154,15 +154,9 @@ export default {
     }
   },
   methods: {
-    openBuildingReservation(buildingCode) {
-      const firstRoom = this.filteredRooms.find((room) => room.building_code === buildingCode);
-
-      if (!firstRoom) {
-        return;
-      }
-
+    selectBuildingFromMap(buildingCode) {
       this.selectedBuildingCode = buildingCode;
-      this.openReservationForm(firstRoom.id);
+      this.activeView = "list";
     },
     clearBuildingSelection() {
       this.selectedBuildingCode = null;

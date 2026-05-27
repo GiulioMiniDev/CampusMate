@@ -814,16 +814,15 @@ body {
 .leaflet-building-pin {
   position: relative;
   display: grid;
-  grid-template-columns: 1.35rem auto;
+  grid-template-columns: 1.4rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.25rem;
-  justify-content: center;
-  width: 210px;
-  max-width: 210px;
-  height: 36px;
+  gap: 0.38rem;
+  width: 250px;
+  max-width: 250px;
+  min-height: 46px;
   border: 2px solid #ffffff;
-  border-radius: 999px;
-  padding: 0 0.52rem;
+  border-radius: 0.9rem;
+  padding: 0.36rem 0.54rem;
   background: #111827;
   color: #ffffff;
   box-shadow: 0 14px 26px rgba(17, 24, 39, 0.24);
@@ -840,6 +839,19 @@ body {
   border-right: 2px solid #ffffff;
   border-bottom: 2px solid #ffffff;
   transform: translateX(-50%) rotate(45deg);
+}
+
+.leaflet-building-pin-icon,
+.leaflet-building-pin-services,
+.leaflet-building-pin-services span {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.leaflet-building-pin-icon {
+  justify-content: center;
 }
 
 .leaflet-building-pin svg {
@@ -859,14 +871,64 @@ body {
 }
 
 .leaflet-building-pin strong {
-  position: relative;
-  z-index: 1;
+  display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.72rem;
+  line-height: 1.1;
+}
+
+.leaflet-building-pin-body {
+  position: relative;
+  z-index: 1;
+  display: block;
+  min-width: 0;
+}
+
+.leaflet-building-pin small {
+  display: block;
+  margin-top: 0.12rem;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.62rem;
+  font-weight: 700;
   line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaflet-building-pin-services {
+  gap: 0.16rem;
+  justify-content: flex-end;
+}
+
+.leaflet-building-pin-services span,
+.leaflet-building-pin-services em {
+  justify-content: center;
+  width: 1.28rem;
+  height: 1.28rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.leaflet-building-pin-services em {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.leaflet-building-service-svg {
+  display: block;
+  width: 13px !important;
+  height: 13px !important;
 }
 
 .leaflet-building-pin.is-selected {
@@ -1607,8 +1669,15 @@ body {
   }
 
   .leaflet-building-pin {
-    width: 160px;
-    max-width: 160px;
+    width: 205px;
+    max-width: 205px;
+    gap: 0.28rem;
+    padding: 0.34rem 0.46rem;
+  }
+
+  .leaflet-building-pin-services span:nth-child(n + 3),
+  .leaflet-building-pin-services em {
+    display: none;
   }
 
   .location-group {
