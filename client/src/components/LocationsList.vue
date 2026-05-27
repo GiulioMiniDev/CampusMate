@@ -16,7 +16,7 @@
     </div>
 
     <div class="locations-list">
-      <article v-for="building in visibleBuildings" :key="building.code" class="location-group">
+      <article v-for="building in visibleBuildings" :key="building.code" class="location-group" :class="{ 'is-expanded': expandedBuilding === building.code }" @click="toggleBuilding(building.code)">
         <div v-if="showPlaceholder(building)" class="location-cover room-cover-placeholder">
           <span>{{ building.code }}</span>
         </div>
@@ -35,37 +35,70 @@
               <h3>{{ building.name }}</h3>
               <p>{{ building.code }} - {{ building.address }}</p>
             </div>
-            <strong class="cm-chip cm-chip-success">{{ building.availableSeats }}/{{ building.totalSeats }}</strong>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <strong class="cm-chip cm-chip-success">{{ building.availableSeats }}/{{ building.totalSeats }}</strong>
+              <svg v-if="expandedBuilding === building.code" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
           </div>
 
-          <div class="room-meta cm-chip-set">
-            <span v-if="building.campusArea" class="cm-chip">{{ building.campusArea }}</span>
-            <span v-if="building.weekdayHours" class="cm-chip">Feriali {{ building.weekdayHours }}</span>
-            <span v-if="building.weekendHours" class="cm-chip">Weekend {{ building.weekendHours }}</span>
+          <div v-if="expandedBuilding !== building.code" class="location-compact-meta" style="display: flex; gap: 12px; margin-top: 8px; align-items: center; font-size: 0.85rem; color: var(--cm-muted);">
+            <div v-if="building.weekdayHours" style="display: flex; gap: 4px; align-items: center;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>{{ building.weekdayHours }} <span v-if="building.weekendHours">(W: {{ building.weekendHours }})</span></span>
+            </div>
+            <div v-if="building.services.length" class="location-service-icons">
+              <span
+                v-for="service in building.services"
+                :key="service"
+                class="location-service-icon"
+                :title="service"
+                :aria-label="service"
+                role="img"
+                v-html="getServiceIcon(service)"
+              ></span>
+            </div>
           </div>
 
-          <div v-if="building.services.length" class="room-services cm-chip-set">
-            <span v-for="service in building.services" :key="service" class="cm-chip cm-chip-success">
-              {{ service }}
+          <div v-if="expandedBuilding !== building.code" class="location-compact-rooms">
+            <span class="compact-rooms-text">
+              <span v-for="(room, index) in building.rooms" :key="room.id">
+                {{ room.name }} ({{ room.available_seats }}/{{ room.total_seats }})<span v-if="index < building.rooms.length - 1">, </span>
+              </span>
             </span>
           </div>
 
-          <div class="location-rooms">
-            <div v-for="room in building.rooms" :key="room.id" class="location-room-row">
-              <div>
-                <strong>{{ room.name }}</strong>
-                <span>Piano {{ room.floor }} - {{ getRoomStatus(room) }}</span>
-              </div>
-              <div class="location-room-actions">
-                <small>{{ room.available_seats }}/{{ room.total_seats }} posti</small>
-                <button
-                  type="button"
-                  class="cm-button cm-button-primary cm-button-sm"
-                  :disabled="room.available_seats === 0"
-                  @click="$emit('reserve', room.id)"
-                >
-                  Prenota
-                </button>
+          <div v-show="expandedBuilding === building.code" class="location-expanded-content">
+            <div class="room-meta cm-chip-set">
+              <span v-if="building.campusArea" class="cm-chip">{{ building.campusArea }}</span>
+              <span v-if="building.weekdayHours" class="cm-chip">Feriali {{ building.weekdayHours }}</span>
+              <span v-if="building.weekendHours" class="cm-chip">Weekend {{ building.weekendHours }}</span>
+            </div>
+
+            <div v-if="building.services.length" class="room-services cm-chip-set">
+              <span v-for="service in building.services" :key="service" class="cm-chip cm-chip-success location-service-chip">
+                <span class="location-service-chip-icon" aria-hidden="true" v-html="getServiceIcon(service)"></span>
+                {{ service }}
+              </span>
+            </div>
+
+            <div class="location-rooms">
+              <div v-for="room in building.rooms" :key="room.id" class="location-room-row">
+                <div>
+                  <strong>{{ room.name }}</strong>
+                  <span>Piano {{ room.floor }} - {{ getRoomStatus(room) }}</span>
+                </div>
+                <div class="location-room-actions">
+                  <small>{{ room.available_seats }}/{{ room.total_seats }} posti</small>
+                  <button
+                    type="button"
+                    class="cm-button cm-button-primary cm-button-sm"
+                    :disabled="room.available_seats === 0"
+                    @click.stop="$emit('reserve', room.id)"
+                  >
+                    Prenota
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -93,7 +126,8 @@ export default {
   emits: ["clear-selection", "reserve"],
   data() {
     return {
-      failedImages: {}
+      failedImages: {},
+      expandedBuilding: null
     };
   },
   computed: {
@@ -140,6 +174,13 @@ export default {
     }
   },
   methods: {
+    toggleBuilding(code) {
+      if (this.expandedBuilding === code) {
+        this.expandedBuilding = null;
+      } else {
+        this.expandedBuilding = code;
+      }
+    },
     showPlaceholder(building) {
       return !building.imageUrl || this.failedImages[building.code];
     },
@@ -154,7 +195,157 @@ export default {
     },
     getRoomStatusColor(room) {
       return getters.getRoomStatusColor(room);
+    },
+    getServiceIconDefinition(service) {
+      if (!service) {
+        return null;
+      }
+
+      const normalized = service
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      const definitions = [
+        {
+          keywords: ["wifi", "wi-fi", "wireless"],
+          icon: `<path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><circle cx="12" cy="20" r="1"></circle>`
+        },
+        {
+          keywords: ["prese", "presa", "corrente", "elettric"],
+          icon: `<path d="M8 2v6"></path><path d="M16 2v6"></path><path d="M12 17v5"></path><path d="M8 22h8"></path><rect x="6" y="8" width="12" height="9" rx="2"></rect>`
+        },
+        {
+          keywords: ["accessibil", "disabili", "ascensore", "barriere"],
+          icon: `<circle cx="9" cy="5" r="2"></circle><path d="M10 22a7 7 0 1 1 4.95-11.95"></path><path d="M11 9h3l1 5h4"></path><path d="M11 9v6"></path><path d="M7 15h6"></path>`
+        },
+        {
+          keywords: ["aria", "clima", "condizionata", "ventilazione"],
+          icon: `<path d="M3 8h12a3 3 0 1 0-3-3"></path><path d="M4 14h14a3 3 0 1 1-3 3"></path><path d="M2 20h9a2 2 0 1 1-2 2"></path>`
+        },
+        {
+          keywords: ["computer", "lab", "pc", "informatica"],
+          icon: `<rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8"></path><path d="M12 16v4"></path>`
+        },
+        {
+          keywords: ["tavoli da disegno", "disegno", "progetto", "architettura"],
+          icon: `<path d="M4 20h16"></path><path d="M6 20l6-16 6 16"></path><path d="M8 14h8"></path><path d="M10 9h4"></path>`
+        },
+        {
+          keywords: ["fotocopia", "fotocopiatrici", "stampante", "stampa", "printer"],
+          icon: `<polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect>`
+        },
+        {
+          keywords: ["riscaldamento", "calore", "termosifone"],
+          icon: `<path d="M8 14a4 4 0 1 0 8 0c0-2-2-3-2-5V5a2 2 0 0 0-4 0v4c0 2-2 3-2 5Z"></path><path d="M12 14v.01"></path>`
+        },
+        {
+          keywords: ["silenz", "acustic", "quiet"],
+          icon: `<path d="M11 5 6 9H2v6h4l5 4V5Z"></path><line x1="22" y1="9" x2="16" y2="15"></line><line x1="16" y1="9" x2="22" y2="15"></line>`
+        },
+        {
+          keywords: ["biblioteca", "lettura", "libri", "consultazione"],
+          icon: `<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"></path>`
+        },
+        {
+          keywords: ["gruppo", "team", "collaborazione"],
+          icon: `<path d="M16 21v-2a4 4 0 0 0-8 0v2"></path><circle cx="12" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>`
+        },
+        {
+          keywords: ["proiettore", "lavagna", "schermo", "presentazione"],
+          icon: `<rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M12 16v4"></path><path d="M8 20h8"></path><path d="M8 9h8"></path><path d="M8 12h5"></path>`
+        },
+        {
+          keywords: ["bar", "caffe", "ristoro"],
+          icon: `<path d="M10 2v2"></path><path d="M14 2v2"></path><path d="M16 8h1a4 4 0 0 1 0 8h-1"></path><path d="M4 8h12v5a6 6 0 0 1-12 0V8Z"></path><path d="M6 20h8"></path>`
+        },
+        {
+          keywords: ["parcheggio", "parking"],
+          icon: `<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M9 17V7h5a3 3 0 0 1 0 6H9"></path>`
+        },
+        {
+          keywords: ["locker", "armadietti", "deposito"],
+          icon: `<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M12 3v18"></path><path d="M8 11h1"></path><path d="M15 11h1"></path>`
+        },
+        {
+          keywords: ["bagni", "toilette", "servizi igienici"],
+          icon: `<circle cx="9" cy="4" r="2"></circle><path d="M9 6v15"></path><path d="M5 11h8"></path><circle cx="17" cy="4" r="2"></circle><path d="M17 6v15"></path><path d="M14 11h6"></path>`
+        }
+      ];
+
+      return definitions.find((definition) => definition.keywords.some((keyword) => normalized.includes(keyword)));
+    },
+    getServiceIcon(service) {
+      const definition = this.getServiceIconDefinition(service);
+      const icon = definition?.icon || `<path d="M12 3l8 4v6c0 5-3.4 7.7-8 9-4.6-1.3-8-4-8-9V7l8-4Z"></path><path d="M9 12l2 2 4-4"></path>`;
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" class="location-service-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>`;
     }
   }
 };
 </script>
+
+<style scoped>
+.location-group {
+  cursor: pointer;
+  height: auto !important; /* Overriding global fixed height */
+  transition: all 0.2s ease;
+  align-items: stretch;
+}
+.location-group:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--cm-shadow-lg) !important;
+}
+.location-cover, .room-cover-placeholder {
+  height: 100% !important;
+  max-height: 120px !important;
+  align-self: flex-start;
+}
+@media (min-width: 1024px) {
+  .location-cover, .room-cover-placeholder {
+    max-height: 100% !important;
+    height: 154px !important;
+  }
+}
+.location-compact-rooms {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--cm-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Truncate if too long */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.location-expanded-content {
+  margin-top: 1rem;
+  border-top: 1px solid var(--cm-border);
+  padding-top: 1rem;
+}
+.location-service-icons,
+.location-service-icon,
+.location-service-chip,
+.location-service-chip-icon {
+  display: inline-flex;
+  align-items: center;
+}
+.location-service-icons {
+  gap: 6px;
+}
+.location-service-icon {
+  color: var(--cm-success);
+}
+.location-service-chip {
+  gap: 6px;
+}
+.location-service-chip-icon {
+  flex: 0 0 auto;
+}
+:deep(.location-service-svg) {
+  display: block;
+}
+@media (min-width: 1024px) {
+  .location-group {
+    grid-template-columns: 200px minmax(0, 1fr) !important; /* Smaller image width than before */
+  }
+}
+</style>
