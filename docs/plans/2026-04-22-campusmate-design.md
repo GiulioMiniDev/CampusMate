@@ -204,19 +204,19 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [x] Creare `GET /api/rooms/:id`.
 - [x] Creare `GET /api/reservations`.
 - [x] Creare `POST /api/reservations`.
-- [ ] Validare i dati ricevuti quando si crea una prenotazione.
-- [ ] Controllare che l'aula esista prima di prenotare.
-- [ ] Controllare che ci siano abbastanza posti disponibili.
-- [ ] Aggiornare i posti disponibili dopo una prenotazione.
-- [ ] Restituire errori JSON comprensibili.
+- [x] Validare i dati ricevuti quando si crea una prenotazione.
+- [x] Controllare che l'aula esista prima di prenotare.
+- [x] Controllare che ci siano abbastanza posti disponibili.
+- [x] Aggiornare i posti disponibili dopo una prenotazione.
+- [x] Restituire errori JSON comprensibili.
 - [x] Configurare CORS se client e server usano porte diverse.
 - [x] Integrare WebSocket nello stesso server Node.js.
 - [x] Mandare un messaggio iniziale quando un client si collega via WebSocket.
-- [ ] Mandare un evento realtime quando cambia una prenotazione.
-- [ ] Mandare un evento realtime quando cambia la disponibilita di un'aula.
+- [x] Mandare un evento realtime quando cambia una prenotazione.
+- [x] Mandare un evento realtime quando cambia la disponibilita di un'aula.
 - [x] Scrivere due righe di istruzioni per avviare il backend.
 - [x] Tenere API e WebSocket dentro la stessa struttura `server/`.
-- [ ] Verificare con chiamate manuali che le API rispondano correttamente con MySQL acceso.
+- [x] Verificare con chiamate manuali che le API rispondano correttamente con MySQL acceso.
 
 ## Task Filippo - Client e interfaccia
 
@@ -241,7 +241,7 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [x] Mostrare un avviso se il WebSocket non e disponibile.
 - [x] Curare lo stile in `client/src/styles.css`.
 - [x] Controllare che la pagina sia usabile anche da mobile.
-- [ ] Fare una prova completa dal browser.
+- [x] Fare una prova completa dal browser.
 
 ## Task Alessandro - Database, test e documentazione
 
@@ -253,17 +253,17 @@ La divisione non significa che ognuno lavora isolato. Alla fine le parti devono 
 - [x] Aggiungere piu aule di esempio.
 - [x] Aggiungere utenti di esempio.
 - [x] Aggiungere prenotazioni di esempio, se utili per la demo.
-- [ ] Scrivere come creare il database.
-- [ ] Scrivere come importare schema e seed.
-- [ ] Provare le query principali usate dal server.
-- [ ] Verificare che le API restituiscano dati coerenti con il database.
-- [ ] Testare il caso aula piena.
-- [ ] Testare il caso orario non valido.
-- [ ] Testare il caso posti richiesti maggiori della disponibilita.
-- [ ] Testare che una prenotazione aggiorni i posti disponibili.
-- [ ] Preparare una checklist per la demo finale.
-- [ ] Aggiornare la documentazione con porte, comandi e ordine di avvio.
-- [ ] Preparare una breve scaletta per spiegare il progetto al professore.
+- [x] Scrivere come creare il database.
+- [x] Scrivere come importare schema e seed.
+- [x] Provare le query principali usate dal server.
+- [x] Verificare che le API restituiscano dati coerenti con il database.
+- [x] Testare il caso aula piena.
+- [x] Testare il caso orario non valido.
+- [x] Testare il caso posti richiesti maggiori della disponibilita.
+- [x] Testare che una prenotazione aggiorni i posti disponibili.
+- [x] Preparare una checklist per la demo finale.
+- [x] Aggiornare la documentazione con porte, comandi e ordine di avvio.
+- [x] Preparare una breve scaletta per spiegare il progetto al professore.
 
 ## Task da fare insieme
 
