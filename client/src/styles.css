@@ -1602,7 +1602,7 @@ body {
   }
 
   .app-nav-link span {
-    max-width: 60px;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
