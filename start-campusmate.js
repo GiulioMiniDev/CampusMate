@@ -21,10 +21,13 @@ const config = {
 };
 
 const args = new Set(process.argv.slice(2));
+const lanHostArg = process.argv.slice(2).find((arg) => arg.startsWith("--lan-host="));
 const options = {
   resetDatabase: args.has("--reset-db") || args.has("--reset-database"),
   skipInstall: args.has("--skip-install"),
-  noBrowser: args.has("--no-browser")
+  noBrowser: args.has("--no-browser"),
+  lan: args.has("--lan") || Boolean(lanHostArg),
+  lanHost: lanHostArg ? lanHostArg.slice("--lan-host=".length) : null
 };
 
 const children = [];
@@ -70,6 +73,31 @@ function assertCommand(command) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getLanAddress() {
+  const interfaces = os.networkInterfaces();
+  const candidates = [];
+
+  for (const [name, addresses] of Object.entries(interfaces)) {
+    for (const address of addresses || []) {
+      if (address.family === "IPv4" && !address.internal) {
+        candidates.push({ name, address: address.address });
+      }
+    }
+  }
+
+  const physicalCandidates = candidates.filter((candidate) => {
+    const name = candidate.name.toLowerCase();
+    return !/(docker|hyper-v|vethernet|virtual|virtualbox|wsl|nord|vpn)/.test(name);
+  });
+  const preferredCandidates = physicalCandidates.length ? physicalCandidates : candidates;
+
+  return preferredCandidates.find((candidate) => candidate.address.startsWith("192.168."))?.address
+    || preferredCandidates.find((candidate) => candidate.address.startsWith("10."))?.address
+    || preferredCandidates.find((candidate) => candidate.address.startsWith("172."))?.address
+    || preferredCandidates[0]?.address
+    || "127.0.0.1";
 }
 
 function isPortOpen(host, port) {
@@ -321,7 +349,7 @@ function installDependencies() {
   npmRun(["install"], clientDir);
 }
 
-function startProcess(name, cwd, commandArgs, port) {
+function startProcess(name, cwd, commandArgs, port, envOverrides = {}) {
   return isPortOpen("127.0.0.1", port).then((open) => {
     if (open) {
       ok(`${name} gia raggiungibile sulla porta ${port}`);
@@ -334,7 +362,10 @@ function startProcess(name, cwd, commandArgs, port) {
       cwd,
       stdio: "inherit",
       shell: process.platform === "win32",
-      env: process.env
+      env: {
+        ...process.env,
+        ...envOverrides
+      }
     });
 
     child.on("exit", (code) => {
@@ -417,10 +448,18 @@ async function main() {
   initializeDatabase();
   installDependencies();
 
+  const lanAddress = options.lan ? options.lanHost || getLanAddress() : "127.0.0.1";
+  const frontendHost = options.lan ? "0.0.0.0" : "127.0.0.1";
+  const frontendUrl = `http://${lanAddress}:${config.clientPort}`;
+  const backendUrl = `http://${lanAddress}:${config.serverPort}`;
+
   await startProcess("backend CampusMate", serverDir, ["run", "dev"], config.serverPort);
   await waitForHttp("backend CampusMate", `http://127.0.0.1:${config.serverPort}/api/health`);
 
-  await startProcess("frontend CampusMate", clientDir, ["run", "dev", "--", "--host", "127.0.0.1"], config.clientPort);
+  await startProcess("frontend CampusMate", clientDir, ["run", "dev", "--", "--host", frontendHost], config.clientPort, {
+    VITE_API_BASE_URL: backendUrl,
+    VITE_WEBSOCKET_URL: `ws://${lanAddress}:${config.serverPort}`
+  });
   await waitForHttp("frontend CampusMate", `http://127.0.0.1:${config.clientPort}`);
 
   openBrowser(`http://127.0.0.1:${config.clientPort}`);
@@ -429,10 +468,16 @@ async function main() {
   console.log("CampusMate e pronto.");
   console.log(`Frontend:  http://127.0.0.1:${config.clientPort}`);
   console.log(`Backend:   http://127.0.0.1:${config.serverPort}`);
+  if (options.lan) {
+    console.log(`Rete LAN:  ${frontendUrl}`);
+    console.log(`API LAN:   ${backendUrl}`);
+  }
   console.log(`Database:  Docker container '${config.containerName}' su localhost:${config.mysqlPort}`);
   console.log("");
   console.log("Uso rapido:");
   console.log("  node start-campusmate.js");
+  console.log("  node start-campusmate.js --lan");
+  console.log("  node start-campusmate.js --lan-host=192.168.1.10");
   console.log("  node start-campusmate.js --reset-db");
   console.log("  node start-campusmate.js --skip-install");
 
