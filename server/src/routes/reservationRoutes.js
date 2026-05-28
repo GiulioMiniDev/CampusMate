@@ -1,6 +1,7 @@
 const express = require("express");
 const db = require("../config/database");
 const { requireAuth } = require("../middleware/auth");
+const { validateOpeningHours } = require("../utils/openingHours");
 const { validateBookingParameters } = require("../utils/validation");
 
 function createReservationRoutes(websocketHub) {
@@ -92,7 +93,12 @@ function createReservationRoutes(websocketHub) {
 
       // Poi controllo che l'aula esista e che sia aperta
       const [rooms] = await connection.query(`
-        SELECT sr.id
+        SELECT
+          sr.id,
+          b.weekday_hours,
+          b.weekend_hours,
+          b.opening_time,
+          b.closing_time
         FROM study_rooms sr
         INNER JOIN buildings b ON b.id = sr.building_id
         WHERE sr.id = :roomId
@@ -105,6 +111,18 @@ function createReservationRoutes(websocketHub) {
         res.status(404).json({
           error: {
             message: "Aula non trovata o non disponibile."
+          }
+        });
+        return;
+      }
+
+      const openingError = validateOpeningHours(rooms[0], startTime, endTime);
+
+      if (openingError) {
+        await connection.rollback();
+        res.status(400).json({
+          error: {
+            message: openingError
           }
         });
         return;

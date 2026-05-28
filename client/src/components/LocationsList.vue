@@ -316,6 +316,9 @@ export default {
   max-height: 120px !important;
   align-self: flex-start;
 }
+.location-heading > div {
+  min-width: 0;
+}
 @media (min-width: 1024px) {
   .location-cover, .room-cover-placeholder {
     max-height: 100% !important;
@@ -532,6 +535,13 @@ export default {
     border-radius: 0;
   }
 
+  .location-group.is-expanded .location-cover,
+  .location-group.is-expanded .room-cover-placeholder {
+    height: 9.25rem !important;
+    max-height: 9.25rem !important;
+    align-self: start;
+  }
+
   .room-cover-placeholder span {
     width: 3.8rem;
     height: 3.8rem;
@@ -547,13 +557,26 @@ export default {
   }
 
   .location-heading h3 {
+    display: -webkit-box;
     font-size: 0.9rem;
     line-height: 1.16;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .location-heading p {
+    display: -webkit-box;
     margin-top: 0.08rem;
     font-size: 0.68rem;
+    line-height: 1.22;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .location-heading strong {

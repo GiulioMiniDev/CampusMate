@@ -96,7 +96,7 @@
 <script>
 import QRCode from "qrcode";
 import { apiService } from "../api.js";
-import { getters, state } from "../store.js";
+import { getters, parseDateTime, state } from "../store.js";
 
 export default {
   name: "ReservationsView",
@@ -158,10 +158,16 @@ export default {
       this.qrCodes = nextQrCodes;
     },
     formatDateTime(value) {
+      const parsedDate = parseDateTime(value);
+
+      if (!parsedDate) {
+        return value || "-";
+      }
+
       return new Intl.DateTimeFormat("it-IT", {
         dateStyle: "medium",
         timeStyle: "short"
-      }).format(new Date(value));
+      }).format(parsedDate);
     },
     formatReservationType(value) {
       return value === "group" ? "Gruppo" : "Individuale";

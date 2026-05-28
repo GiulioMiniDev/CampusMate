@@ -39,29 +39,14 @@
           </div>
         </section>
 
-        <div v-if="formMessage" :class="['cm-alert', formMessageType === 'success' ? 'cm-alert-success' : 'cm-alert-danger']">
-          {{ formMessage }}
+        <div v-if="floorplanTables.length" class="floorplan-scroll mb-3">
+          <RoomFloorPlan
+            :tables="floorplanTables"
+            :selected-table-id="form.study_table_id"
+            :has-slot-availability="Boolean(availability.result?.tables)"
+            @select-table="$emit('select-table', $event)"
+          />
         </div>
-
-        <div v-if="availability.loading" class="cm-alert cm-alert-info">
-          Controllo disponibilita in corso...
-        </div>
-
-        <div v-else-if="availability.message" :class="['cm-alert', availability.type === 'success' ? 'cm-alert-success' : availability.type === 'error' ? 'cm-alert-danger' : 'cm-alert-info']">
-          {{ availability.message }}
-          <span v-if="availability.result?.available">
-            Posti compatibili liberi: {{ availability.result.available_seats }}.
-          </span>
-        </div>
-
-        <RoomFloorPlan
-          v-if="floorplanTables.length"
-          class="mb-3"
-          :tables="floorplanTables"
-          :selected-table-id="form.study_table_id"
-          :has-slot-availability="Boolean(availability.result?.tables)"
-          @select-table="$emit('select-table', $event)"
-        />
 
         <div v-else class="cm-alert cm-alert-muted">
           Caricamento planimetria aula...
@@ -82,25 +67,38 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label cm-label">Inizio prenotazione</label>
+            <label class="form-label cm-label">Giorno prenotazione</label>
             <input
-              v-model="form.start_time"
-              type="datetime-local"
+              v-model="reservationDate"
+              type="date"
               class="form-control cm-field"
+              :min="today"
               required
               @change="$emit('check-availability')"
             >
           </div>
 
-          <div class="mb-3">
-            <label class="form-label cm-label">Fine prenotazione</label>
-            <input
-              v-model="form.end_time"
-              type="datetime-local"
-              class="form-control cm-field"
-              required
-              @change="$emit('check-availability')"
-            >
+          <div class="reservation-time-range mb-3">
+            <div>
+              <label class="form-label cm-label">Dalle</label>
+              <input
+                v-model="startClock"
+                type="time"
+                class="form-control cm-field"
+                required
+                @change="$emit('check-availability')"
+              >
+            </div>
+            <div>
+              <label class="form-label cm-label">Alle</label>
+              <input
+                v-model="endClock"
+                type="time"
+                class="form-control cm-field"
+                required
+                @change="$emit('check-availability')"
+              >
+            </div>
           </div>
 
           <div class="mb-3">
@@ -126,6 +124,17 @@
           <div class="mb-3">
             <label class="form-label cm-label">Note (opzionale)</label>
             <textarea v-model="form.notes" class="form-control cm-field" rows="2"></textarea>
+          </div>
+
+          <div
+            v-if="feedbackMessage"
+            :class="['cm-alert', 'reservation-feedback', feedbackClass]"
+            role="status"
+          >
+            {{ feedbackMessage }}
+            <span v-if="availability.result?.available">
+              Posti compatibili liberi: {{ availability.result.available_seats }}.
+            </span>
           </div>
 
           <div class="d-flex gap-2 flex-wrap">
@@ -192,6 +201,75 @@ export default {
     }
   },
   computed: {
+    feedbackMessage() {
+      if (this.formMessage) {
+        return this.formMessage;
+      }
+
+      if (this.availability.loading) {
+        return "Controllo disponibilita in corso...";
+      }
+
+      return this.availability.message;
+    },
+    feedbackClass() {
+      if (this.formMessage) {
+        return this.formMessageType === "success" ? "cm-alert-success" : "cm-alert-danger";
+      }
+
+      if (this.availability.loading) {
+        return "cm-alert-info";
+      }
+
+      if (this.availability.type === "success") {
+        return "cm-alert-success";
+      }
+
+      return this.availability.type === "error" ? "cm-alert-danger" : "cm-alert-info";
+    },
+    today() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    },
+    reservationDate: {
+      get() {
+        return this.getDatePart(this.form.start_time || this.form.end_time);
+      },
+      set(date) {
+        const nextDate = date || "";
+        const start = this.startClock || "09:00";
+        const end = this.endClock || "10:00";
+
+        this.form.start_time = nextDate ? `${nextDate}T${start}` : "";
+        this.form.end_time = nextDate ? `${nextDate}T${end}` : "";
+      }
+    },
+    startClock: {
+      get() {
+        return this.getTimePart(this.form.start_time);
+      },
+      set(time) {
+        const date = this.reservationDate || this.today;
+        this.form.start_time = time ? `${date}T${time}` : "";
+
+        if (this.form.end_time && this.getDatePart(this.form.end_time) !== date) {
+          this.form.end_time = `${date}T${this.endClock}`;
+        }
+      }
+    },
+    endClock: {
+      get() {
+        return this.getTimePart(this.form.end_time);
+      },
+      set(time) {
+        const date = this.reservationDate || this.today;
+        this.form.end_time = time ? `${date}T${time}` : "";
+      }
+    },
     building() {
       const sourceRoom = this.room || this.buildingRooms[0];
 
@@ -207,6 +285,8 @@ export default {
         imageUrl: sourceRoom.image_url,
         weekdayHours: sourceRoom.weekday_hours,
         weekendHours: sourceRoom.weekend_hours,
+        openingTime: sourceRoom.opening_time,
+        closingTime: sourceRoom.closing_time,
         services: sourceRoom.services || []
       };
     },
@@ -215,6 +295,14 @@ export default {
     },
     floorplanTables() {
       return this.availability.result?.tables || this.room?.tables || [];
+    }
+  },
+  methods: {
+    getDatePart(value) {
+      return value ? String(value).slice(0, 10) : "";
+    },
+    getTimePart(value) {
+      return value ? String(value).slice(11, 16) : "";
     }
   }
 };

@@ -1,5 +1,6 @@
 const express = require("express");
 const db = require("../config/database");
+const { validateOpeningHours } = require("../utils/openingHours");
 const { validateBookingParameters } = require("../utils/validation");
 const { requireAuth } = require("../middleware/auth"); // Assuming this exists
 
@@ -21,6 +22,8 @@ const roomSelect = `
     b.longitude,
     b.weekday_hours,
     b.weekend_hours,
+    b.opening_time,
+    b.closing_time,
     b.services,
     sr.floor_label AS floor,
     sr.room_code,
@@ -96,7 +99,12 @@ router.get("/:id/availability", async (req, res, next) => {
     const requestedTableId = req.query.study_table_id ? Number(req.query.study_table_id) : null;
 
     const [rooms] = await db.query(`
-      SELECT sr.id
+      SELECT
+        sr.id,
+        b.weekday_hours,
+        b.weekend_hours,
+        b.opening_time,
+        b.closing_time
       FROM study_rooms sr
       INNER JOIN buildings b ON b.id = sr.building_id
       WHERE sr.id = :roomId
@@ -109,6 +117,17 @@ router.get("/:id/availability", async (req, res, next) => {
       res.status(404).json({
         error: {
           message: "Aula non trovata o non disponibile."
+        }
+      });
+      return;
+    }
+
+    const openingError = validateOpeningHours(rooms[0], startTime, endTime);
+
+    if (openingError) {
+      res.status(400).json({
+        error: {
+          message: openingError
         }
       });
       return;
