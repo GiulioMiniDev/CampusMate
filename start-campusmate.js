@@ -26,7 +26,8 @@ const options = {
   resetDatabase: args.has("--reset-db") || args.has("--reset-database"),
   skipInstall: args.has("--skip-install"),
   noBrowser: args.has("--no-browser"),
-  lan: args.has("--lan") || Boolean(lanHostArg),
+  lanHttps: args.has("--lan-https") || args.has("--https-lan"),
+  lan: args.has("--lan") || args.has("--lan-https") || args.has("--https-lan") || Boolean(lanHostArg),
   lanHost: lanHostArg ? lanHostArg.slice("--lan-host=".length) : null
 };
 
@@ -238,12 +239,14 @@ function initializeDatabase() {
     ok("Database campusmate importato da schema.sql e seed.sql");
     ensureBuildingMetadataColumns();
     ensureTableLayoutColumns();
+    ensureReceptionSchema();
     return;
   }
 
   ok("Database campusmate gia inizializzato");
   ensureBuildingMetadataColumns();
   ensureTableLayoutColumns();
+  ensureReceptionSchema();
 }
 
 function ensureBuildingMetadataColumns() {
@@ -324,6 +327,81 @@ function ensureTableLayoutColumns() {
   ok("Campi layout tavoli aggiunti al database esistente");
 }
 
+function ensureReceptionSchema() {
+  mysqlExec(`
+    USE campusmate;
+    ALTER TABLE users
+      MODIFY COLUMN role ENUM('student', 'admin', 'receptionist') NOT NULL DEFAULT 'student';
+
+    CREATE TABLE IF NOT EXISTS receptionist_assignments (
+      user_id INT NOT NULL,
+      building_id INT NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (user_id, building_id),
+      CONSTRAINT fk_receptionist_assignment_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+      CONSTRAINT fk_receptionist_assignment_building
+        FOREIGN KEY (building_id) REFERENCES buildings(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+    );
+  `);
+
+  const requiredColumns = [
+    ["checked_in_at", "DATETIME NULL"],
+    ["checked_out_at", "DATETIME NULL"],
+    ["checked_in_by", "INT NULL"],
+    ["checked_out_by", "INT NULL"]
+  ];
+
+  const missingColumns = requiredColumns.filter(([columnName]) => {
+    const output = run("docker", [
+      "exec",
+      config.containerName,
+      "mysql",
+      ...mysqlClientArgs(["-N", "-B"]),
+      "-e",
+      `SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'campusmate' AND table_name = 'reservations' AND column_name = '${columnName}';`
+    ]).trim();
+
+    return Number(output || 0) === 0;
+  });
+
+  if (missingColumns.length > 0) {
+    mysqlExec(`
+      USE campusmate;
+      ALTER TABLE reservations
+        ${missingColumns.map(([columnName, definition]) => `ADD COLUMN ${columnName} ${definition}`).join(",\n        ")};
+    `);
+  }
+
+  mysqlExec(`
+    USE campusmate;
+    INSERT IGNORE INTO users (
+      first_name,
+      last_name,
+      email,
+      password_hash,
+      role,
+      student_number,
+      degree_course,
+      year_of_study,
+      phone,
+      status
+    ) VALUES
+    ('Reception', 'Economia', 'reception.economia@campusmate.local', 'scrypt$Rk4AIE0Kb3t9h_ya1sIP-g$C4h6NzsEe6co-UJKpOFJOe2Ic5A5-69Vt1jhkChG9nDItBGfb1YU7vpHL3WgcI7ZwlEX1bzwo4y8ZrSsSeHP4w', 'receptionist', NULL, NULL, NULL, NULL, 'active'),
+    ('Reception', 'Giurisprudenza', 'reception.giurisprudenza@campusmate.local', 'scrypt$Rk4AIE0Kb3t9h_ya1sIP-g$C4h6NzsEe6co-UJKpOFJOe2Ic5A5-69Vt1jhkChG9nDItBGfb1YU7vpHL3WgcI7ZwlEX1bzwo4y8ZrSsSeHP4w', 'receptionist', NULL, NULL, NULL, NULL, 'active');
+
+    INSERT IGNORE INTO receptionist_assignments (user_id, building_id) VALUES
+    ((SELECT id FROM users WHERE email = 'reception.economia@campusmate.local'), (SELECT id FROM buildings WHERE code = 'RM019')),
+    ((SELECT id FROM users WHERE email = 'reception.giurisprudenza@campusmate.local'), (SELECT id FROM buildings WHERE code = 'CU002'));
+  `);
+
+  ok("Schema e utenti reception verificati");
+}
+
 function npmCommand() {
   return "npm";
 }
@@ -384,7 +462,9 @@ async function waitForHttp(name, url) {
 
   for (let attempt = 0; attempt < 30; attempt += 1) {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        dispatcher: url.startsWith("https://") ? getInsecureHttpsDispatcher() : undefined
+      });
       if (response.status >= 200 && response.status < 500) {
         ok(`${name} risponde su ${url}`);
         return;
@@ -395,6 +475,16 @@ async function waitForHttp(name, url) {
   }
 
   throw new Error(`${name} non risponde su ${url}.`);
+}
+
+function getInsecureHttpsDispatcher() {
+  try {
+    const { Agent } = require("undici");
+    return new Agent({ connect: { rejectUnauthorized: false } });
+  } catch {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+    return undefined;
+  }
 }
 
 function openBrowser(url) {
@@ -450,33 +540,39 @@ async function main() {
 
   const lanAddress = options.lan ? options.lanHost || getLanAddress() : "127.0.0.1";
   const frontendHost = options.lan ? "0.0.0.0" : "127.0.0.1";
-  const frontendUrl = `http://${lanAddress}:${config.clientPort}`;
+  const frontendProtocol = options.lanHttps ? "https" : "http";
+  const frontendUrl = `${frontendProtocol}://${lanAddress}:${config.clientPort}`;
   const backendUrl = `http://${lanAddress}:${config.serverPort}`;
 
   await startProcess("backend CampusMate", serverDir, ["run", "dev"], config.serverPort);
   await waitForHttp("backend CampusMate", `http://127.0.0.1:${config.serverPort}/api/health`);
 
   await startProcess("frontend CampusMate", clientDir, ["run", "dev", "--", "--host", frontendHost], config.clientPort, {
-    VITE_API_BASE_URL: backendUrl,
-    VITE_WEBSOCKET_URL: `ws://${lanAddress}:${config.serverPort}`
+    CAMPUSMATE_HTTPS: options.lanHttps ? "1" : "0",
+    VITE_API_BASE_URL: options.lanHttps ? "" : backendUrl,
+    VITE_WEBSOCKET_URL: options.lanHttps ? `wss://${lanAddress}:${config.clientPort}/ws` : `ws://${lanAddress}:${config.serverPort}`
   });
-  await waitForHttp("frontend CampusMate", `http://127.0.0.1:${config.clientPort}`);
+  await waitForHttp("frontend CampusMate", `${frontendProtocol}://127.0.0.1:${config.clientPort}`);
 
-  openBrowser(`http://127.0.0.1:${config.clientPort}`);
+  openBrowser(`${frontendProtocol}://127.0.0.1:${config.clientPort}`);
 
   console.log("");
   console.log("CampusMate e pronto.");
-  console.log(`Frontend:  http://127.0.0.1:${config.clientPort}`);
+  console.log(`Frontend:  ${frontendProtocol}://127.0.0.1:${config.clientPort}`);
   console.log(`Backend:   http://127.0.0.1:${config.serverPort}`);
   if (options.lan) {
     console.log(`Rete LAN:  ${frontendUrl}`);
     console.log(`API LAN:   ${backendUrl}`);
+    if (options.lanHttps) {
+      console.log("iPad/Safari: apri la Rete LAN, accetta il certificato dev e poi avvia la camera.");
+    }
   }
   console.log(`Database:  Docker container '${config.containerName}' su localhost:${config.mysqlPort}`);
   console.log("");
   console.log("Uso rapido:");
   console.log("  node start-campusmate.js");
   console.log("  node start-campusmate.js --lan");
+  console.log("  node start-campusmate.js --lan-https");
   console.log("  node start-campusmate.js --lan-host=192.168.1.10");
   console.log("  node start-campusmate.js --reset-db");
   console.log("  node start-campusmate.js --skip-install");

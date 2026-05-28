@@ -4,8 +4,8 @@ const AUTH_STORAGE_KEY = "campusmate.auth";
 const storedAuth = readStoredAuth();
 
 export const state = reactive({
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
-  websocketUrl: import.meta.env.VITE_WEBSOCKET_URL || "ws://localhost:8000",
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000",
+  websocketUrl: import.meta.env.VITE_WEBSOCKET_URL ?? "ws://localhost:8000",
   authToken: storedAuth?.token || "",
   currentUser: storedAuth?.user || null,
   authMode: "login",

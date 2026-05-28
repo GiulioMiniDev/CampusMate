@@ -3,6 +3,7 @@ import AccountView from "./views/AccountView.vue";
 import ReservationsView from "./views/ReservationsView.vue";
 import RoomsView from "./views/RoomsView.vue";
 import AdminDashboard from "./views/AdminDashboard.vue";
+import ReceptionView from "./views/ReceptionView.vue";
 import { state } from "./store.js";
 
 const router = createRouter({
@@ -33,6 +34,11 @@ const router = createRouter({
       component: AdminDashboard
     },
     {
+      path: "/reception",
+      name: "reception",
+      component: ReceptionView
+    },
+    {
       path: "/:pathMatch(.*)*",
       redirect: "/aule"
     }
@@ -40,7 +46,19 @@ const router = createRouter({
 });
 
 router.beforeEach((to) => {
-  if (to.path === "/prenotazioni" && state.currentUser?.role === "admin") {
+  if (to.path === "/prenotazioni" && ["admin", "receptionist"].includes(state.currentUser?.role)) {
+    return state.currentUser.role === "receptionist" ? "/reception" : "/aule";
+  }
+
+  if (to.path === "/aule" && state.currentUser?.role === "receptionist") {
+    return "/reception";
+  }
+
+  if (to.path === "/admin" && state.currentUser?.role && state.currentUser.role !== "admin") {
+    return state.currentUser.role === "receptionist" ? "/reception" : "/aule";
+  }
+
+  if (to.path === "/reception" && state.currentUser?.role && state.currentUser.role !== "receptionist") {
     return "/aule";
   }
 });

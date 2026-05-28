@@ -2,7 +2,7 @@ const express = require("express");
 const db = require("../config/database");
 const { validateOpeningHours } = require("../utils/openingHours");
 const { validateBookingParameters } = require("../utils/validation");
-const { requireAuth } = require("../middleware/auth"); // Assuming this exists
+const { optionalAuth, requireAuth } = require("../middleware/auth"); // Assuming this exists
 
 const router = express.Router();
 
@@ -80,14 +80,16 @@ function normalizeRoom(room) {
 }
 
 // Restituisce tutte le aule studio con edificio, stato e disponibilità
-router.get("/", async (req, res, next) => {
+router.get("/", optionalAuth, async (req, res, next) => {
   try {
     const slot = getAvailabilitySlot(req.query);
+    const scope = getReceptionRoomScope(req);
     const [rooms] = await db.query(`
       ${getRoomSelect(Boolean(slot))}
+      ${scope.where}
       GROUP BY sr.id, b.id
       ORDER BY b.name, sr.floor_label, sr.name
-    `, slot || {});
+    `, { ...(slot || {}), ...scope.params });
 
     res.json(rooms.map((room) => normalizeRoomForSlot(room, slot)));
   } catch (error) {
@@ -105,7 +107,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // Controlla la disponibilita di un'aula per uno slot orario specifico.
-router.get("/:id/availability", async (req, res, next) => {
+router.get("/:id/availability", optionalAuth, async (req, res, next) => {
   try {
     const roomId = Number(req.params.id);
     const validationError = validateBookingParameters({ room_id: roomId, ...req.query });
@@ -123,6 +125,7 @@ router.get("/:id/availability", async (req, res, next) => {
     const endTime = req.query.end_time;
     const seatsRequested = Number(req.query.seats_requested || 1);
     const requestedTableId = req.query.study_table_id ? Number(req.query.study_table_id) : null;
+    const scope = getReceptionRoomScope(req);
 
     const [rooms] = await db.query(`
       SELECT
@@ -136,8 +139,9 @@ router.get("/:id/availability", async (req, res, next) => {
       WHERE sr.id = :roomId
         AND sr.status = 'open'
         AND b.status = 'open'
+        ${scope.and}
       LIMIT 1
-    `, { roomId });
+    `, { roomId, ...scope.params });
 
     if (rooms.length === 0) {
       res.status(404).json({
@@ -222,7 +226,7 @@ router.get("/:id/availability", async (req, res, next) => {
 });
 
 // Restituisce una singola aula e, in piu, l'elenco dei tavoli al suo interno
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", optionalAuth, async (req, res, next) => {
   try {
     const roomId = Number(req.params.id);
 
@@ -235,11 +239,13 @@ router.get("/:id", async (req, res, next) => {
       return;
     }
 
+    const scope = getReceptionRoomScope(req);
     const [rooms] = await db.query(`
       ${getRoomSelect()}
       WHERE sr.id = :roomId
+        ${scope.and}
       GROUP BY sr.id, b.id
-    `, { roomId });
+    `, { roomId, ...scope.params });
 
     if (rooms.length === 0) {
       res.status(404).json({
@@ -480,4 +486,30 @@ function normalizeServices(services) {
   } catch {
     return [];
   }
+}
+
+function getReceptionRoomScope(req) {
+  if (req.auth?.role !== "receptionist") {
+    return {
+      where: "",
+      and: "",
+      params: {}
+    };
+  }
+
+  const subquery = `
+    b.id IN (
+      SELECT building_id
+      FROM receptionist_assignments
+      WHERE user_id = :receptionUserId
+    )
+  `;
+
+  return {
+    where: `WHERE ${subquery}`,
+    and: `AND ${subquery}`,
+    params: {
+      receptionUserId: req.auth.userId
+    }
+  };
 }

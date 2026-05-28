@@ -16,7 +16,9 @@ INSERT INTO users (
 ('Giulia', 'Bianchi', 'giulia.bianchi@uniroma1.it', 'scrypt$-3ZHn0WttRSorj080FSg3A$DhcMso_MI_q3uDM69tS4W21Z5X0v09ccz3CKEtdCPy1x5Cfp6TTTLxftRxLQYvlEJLHN2xmb41S-GfLLlaCG8g', 'student', '1882452', 'Ingegneria Gestionale', 1, '+39 333 222 3333', 'active'),
 ('Luca', 'Verdi', 'luca.verdi@uniroma1.it', 'scrypt$-3ZHn0WttRSorj080FSg3A$DhcMso_MI_q3uDM69tS4W21Z5X0v09ccz3CKEtdCPy1x5Cfp6TTTLxftRxLQYvlEJLHN2xmb41S-GfLLlaCG8g', 'student', '1882453', 'Economia', 3, NULL, 'active'),
 ('Sara', 'Neri', 'sara.neri@uniroma1.it', 'scrypt$-3ZHn0WttRSorj080FSg3A$DhcMso_MI_q3uDM69tS4W21Z5X0v09ccz3CKEtdCPy1x5Cfp6TTTLxftRxLQYvlEJLHN2xmb41S-GfLLlaCG8g', 'student', '1882454', 'Medicina', 4, '+39 333 444 5555', 'active'),
-('Admin', 'CampusMate', 'admin@campusmate.local', 'scrypt$Rk4AIE0Kb3t9h_ya1sIP-g$C4h6NzsEe6co-UJKpOFJOe2Ic5A5-69Vt1jhkChG9nDItBGfb1YU7vpHL3WgcI7ZwlEX1bzwo4y8ZrSsSeHP4w', 'admin', NULL, NULL, NULL, NULL, 'active');
+('Admin', 'CampusMate', 'admin@campusmate.local', 'scrypt$Rk4AIE0Kb3t9h_ya1sIP-g$C4h6NzsEe6co-UJKpOFJOe2Ic5A5-69Vt1jhkChG9nDItBGfb1YU7vpHL3WgcI7ZwlEX1bzwo4y8ZrSsSeHP4w', 'admin', NULL, NULL, NULL, NULL, 'active'),
+('Reception', 'Economia', 'reception.economia@campusmate.local', 'scrypt$Rk4AIE0Kb3t9h_ya1sIP-g$C4h6NzsEe6co-UJKpOFJOe2Ic5A5-69Vt1jhkChG9nDItBGfb1YU7vpHL3WgcI7ZwlEX1bzwo4y8ZrSsSeHP4w', 'receptionist', NULL, NULL, NULL, NULL, 'active'),
+('Reception', 'Giurisprudenza', 'reception.giurisprudenza@campusmate.local', 'scrypt$Rk4AIE0Kb3t9h_ya1sIP-g$C4h6NzsEe6co-UJKpOFJOe2Ic5A5-69Vt1jhkChG9nDItBGfb1YU7vpHL3WgcI7ZwlEX1bzwo4y8ZrSsSeHP4w', 'receptionist', NULL, NULL, NULL, NULL, 'active');
 
 INSERT INTO buildings (
     name,
@@ -37,6 +39,10 @@ INSERT INTO buildings (
 ('Facolta di Architettura Valle Giulia', 'RM062', 'Via Antonio Gramsci 53, 00197 Roma', 'Valle Giulia', 'https://www.radiocolonna.it/public/images/2020/10/D940D26C-8E6B-49AF-B50C-C1B65A2E83D5-1280x720.jpeg', 41.918115, 12.477742, '09:00 - 19:30', 'Chiuso', JSON_ARRAY('Wi-Fi', 'Prese elettriche', 'Tavoli da disegno', 'Fotocopiatrici'), '09:00:00', '19:30:00', 'open'),
 ('Facolta di Giurisprudenza (Citta Universitaria)', 'CU002', 'Piazzale Aldo Moro 5, 00185 Roma', 'Citta Universitaria', 'https://www.uniroma1.it/sites/default/files/styles/1150_300/public/giurisprudenza_3.jpg', 41.904012, 12.514105, '08:30 - 22:00', 'Sabato 08:30 - 13:30', JSON_ARRAY('Wi-Fi', 'Prese elettriche', 'Riscaldamento', 'Silenziatore acustico'), '08:30:00', '22:00:00', 'open'),
 ('Sede di Via dei Sardi - San Lorenzo', 'RM035', 'Via dei Sardi 70, 00185 Roma', 'San Lorenzo', 'https://www.uniroma1.it/sites/default/files/styles/1150_300/public/psicologia_2.jpg', 41.897312, 12.519894, '09:00 - 19:00', 'Chiuso', JSON_ARRAY('Wi-Fi', 'Prese elettriche', 'Aria condizionata'), '09:00:00', '19:00:00', 'open');
+
+INSERT INTO receptionist_assignments (user_id, building_id) VALUES
+((SELECT id FROM users WHERE email = 'reception.economia@campusmate.local'), (SELECT id FROM buildings WHERE code = 'RM019')),
+((SELECT id FROM users WHERE email = 'reception.giurisprudenza@campusmate.local'), (SELECT id FROM buildings WHERE code = 'CU002'));
 
 INSERT INTO study_rooms (
     building_id,

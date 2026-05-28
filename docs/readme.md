@@ -11,7 +11,7 @@ Rendere visibile, aggiornata e prenotabile la disponibilita delle aule studio co
 - **Disponibilita realtime**: aggiornamenti live via WebSocket con fallback a refresh periodico se la connessione si interrompe.
 - **Prenotazioni guidate**: selezione sede, aula e tavolo con verifica posti e orari in tempo reale.
 - **Filtri intelligenti**: ricerca testuale, servizi, orari e fascia di chiusura per ridurre subito il rumore.
-- **Accesso sicuro**: login con token e ruoli distinti (student/admin).
+- **Accesso sicuro**: login con token e ruoli distinti (student/receptionist/admin).
 - **Mobile first**: layout compatto e navigazione rapida per uso in mobilita.
 
 ## Architettura e flusso dati
@@ -79,7 +79,10 @@ Opzioni utili:
 node start-campusmate.js --reset-db
 node start-campusmate.js --skip-install
 node start-campusmate.js --no-browser
+node start-campusmate.js --lan-https
 ```
+
+Usare `--lan-https` per provare lo scanner da iPad/Safari: iOS richiede HTTPS per concedere l'accesso alla camera da un indirizzo LAN.
 
 ## Avvio manuale in sviluppo
 
@@ -120,10 +123,18 @@ La cartella `client/dist/` viene generata da `npm run build` e non va modificata
 
 La registrazione crea sempre account con ruolo `student`.
 
+CampusMate ha tre visualizzazioni principali, scelte automaticamente in base al ruolo dell'utente:
+
+- **Studente**: vede le aule disponibili, filtra per sede/servizi/orari, prenota un tavolo e visualizza il QR code delle proprie prenotazioni.
+- **Reception**: vede solo gli edifici assegnati, scannerizza i QR degli studenti e controlla la lista degli utenti presenti in aula e nei tavoli.
+- **Admin**: gestisce edifici, aule e tavoli, senza accedere alla schermata operativa della reception.
+
 Account demo dopo un reset del database:
 
 - Studente: `mario.rossi@uniroma1.it` / `student123`
 - Admin seed: `admin@campusmate.local` / `admin123`
+- Reception Economia: `reception.economia@campusmate.local` / `admin123`
+- Reception Giurisprudenza: `reception.giurisprudenza@campusmate.local` / `admin123`
 
 Endpoint principali:
 
@@ -132,3 +143,8 @@ Endpoint principali:
 - `GET /api/auth/me`
 
 Per leggere o creare prenotazioni il client invia il token con header `Authorization: Bearer <token>`.
+
+## Reception e check-in
+
+Gli utenti con ruolo `receptionist` accedono alla vista Reception e vedono solo gli edifici assegnati in `receptionist_assignments`.
+Da li possono scannerizzare il QR della prenotazione, registrare il check-in e vedere gli studenti presenti per aula e tavolo.

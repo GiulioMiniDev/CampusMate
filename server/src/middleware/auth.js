@@ -30,6 +30,30 @@ function requireAuth(req, res, next) {
   }
 }
 
+function optionalAuth(req, res, next) {
+  const authorization = req.get("Authorization") || "";
+  const [scheme, token] = authorization.split(" ");
+
+  if (scheme !== "Bearer" || !token) {
+    next();
+    return;
+  }
+
+  try {
+    const payload = verifyAuthToken(token);
+    req.auth = {
+      userId: Number(payload.sub),
+      email: payload.email,
+      role: payload.role
+    };
+  } catch {
+    req.auth = null;
+  }
+
+  next();
+}
+
 module.exports = {
+  optionalAuth,
   requireAuth
 };

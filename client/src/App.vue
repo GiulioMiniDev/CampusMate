@@ -4,19 +4,23 @@
       <div class="container-fluid px-3 px-md-4">
         <span class="navbar-brand fw-semibold">CampusMate</span>
         <div v-if="isAuthenticated" class="app-nav">
-          <RouterLink class="app-nav-link" to="/aule">
+          <RouterLink v-if="!isReceptionist" class="app-nav-link" to="/aule">
             <MapPinned class="app-nav-icon" aria-hidden="true" />
             <span>Aule</span>
           </RouterLink>
-          <RouterLink v-if="!isAdmin" class="app-nav-link" to="/prenotazioni">
+          <RouterLink v-if="isStudent" class="app-nav-link" to="/prenotazioni">
             <TicketCheck class="app-nav-icon" aria-hidden="true" />
             <span>Prenotazioni</span>
+          </RouterLink>
+          <RouterLink v-if="isReceptionist" class="app-nav-link" to="/reception">
+            <ScanLine class="app-nav-icon" aria-hidden="true" />
+            <span>Reception</span>
           </RouterLink>
           <RouterLink class="app-nav-link" to="/account">
             <UserRound class="app-nav-icon" aria-hidden="true" />
             <span>Account</span>
           </RouterLink>
-          <RouterLink v-if="currentUser?.role === 'admin'" class="app-nav-link" to="/admin">
+          <RouterLink v-if="isAdmin" class="app-nav-link" to="/admin">
             <UserRound class="app-nav-icon" aria-hidden="true" />
             <span>Admin</span>
           </RouterLink>
@@ -49,7 +53,7 @@
     </main>
 
     <ReservationModal
-      v-if="isAuthenticated && !isAdmin && showReservationForm"
+      v-if="isAuthenticated && isStudent && showReservationForm"
       :form="reservationForm"
       :is-submitting="isSubmitting"
       :form-message="formMessage"
@@ -67,7 +71,7 @@
 </template>
 
 <script>
-import { MapPinned, TicketCheck, UserRound } from "@lucide/vue";
+import { MapPinned, ScanLine, TicketCheck, UserRound } from "@lucide/vue";
 import AuthPanel from "./components/AuthPanel.vue";
 import DiagnosticsPanel from "./components/DiagnosticsPanel.vue";
 import ReservationModal from "./components/ReservationModal.vue";
@@ -82,6 +86,7 @@ export default {
     DiagnosticsPanel,
     MapPinned,
     ReservationModal,
+    ScanLine,
     TicketCheck,
     UserRound
   },
@@ -101,6 +106,8 @@ export default {
     currentUserName() { return getters.getCurrentUserName(); },
     currentUser() { return state.currentUser; },
     isAdmin() { return state.currentUser?.role === "admin"; },
+    isReceptionist() { return state.currentUser?.role === "receptionist"; },
+    isStudent() { return state.currentUser?.role === "student"; },
     isAuthenticated() { return getters.isAuthenticated(); },
     health() { return state.health; },
     socketMessages() { return state.socketMessages; },
@@ -180,7 +187,7 @@ export default {
       this.syncFallbackRefresh();
     },
     ensureAdminRoute() {
-      if (this.isAdmin && this.$route.path === "/prenotazioni") {
+      if ((this.isAdmin || state.currentUser?.role === "receptionist") && this.$route.path === "/prenotazioni") {
         this.$router.replace("/aule");
       }
     },
@@ -210,7 +217,7 @@ export default {
       try {
         await apiService.login();
         await this.startDashboard();
-        this.$router.push("/aule");
+        this.$router.push(state.currentUser?.role === "receptionist" ? "/reception" : "/aule");
       } catch (error) {
         console.error("Login failed:", error);
       }
@@ -242,14 +249,14 @@ export default {
       mutations.closeReservationForm();
     },
     changeReservationRoom(roomId) {
-      if (this.isAdmin) {
+      if (!this.isStudent) {
         return;
       }
 
       this.openReservationForm(roomId);
     },
     openReservationForm(roomId) {
-      if (this.isAdmin) {
+      if (!this.isStudent) {
         mutations.closeReservationForm();
         return;
       }
@@ -271,7 +278,7 @@ export default {
       this.scheduleAvailabilityCheck();
     },
     async submitReservation() {
-      if (this.isAdmin) {
+      if (!this.isStudent) {
         mutations.closeReservationForm();
         return;
       }

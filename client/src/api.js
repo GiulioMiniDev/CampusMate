@@ -163,7 +163,7 @@ async function makeRequest(method, endpoint, body = null, requireAuth = false) {
       request.setRequestHeader("Content-Type", "application/json");
     }
     
-    if (requireAuth && state.authToken) {
+    if ((requireAuth || state.authToken) && state.authToken) {
       request.setRequestHeader("Authorization", `Bearer ${state.authToken}`);
     }
 
@@ -342,6 +342,16 @@ export const apiService = {
       mutations.setReservationsMessage(error.message || "Cancellazione non riuscita.");
       throw error;
     }
+  },
+
+  async loadReceptionOverview() {
+    return makeRequest("GET", "/api/reception/overview", null, true);
+  },
+
+  async receptionCheckIn(qrPayload) {
+    return makeRequest("POST", "/api/reception/check-in", {
+      qr_payload: qrPayload
+    }, true);
   },
 
   async checkRoomAvailability(form = state.reservationForm) {

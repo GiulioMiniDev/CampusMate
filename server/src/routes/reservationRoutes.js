@@ -10,7 +10,7 @@ function createReservationRoutes(websocketHub) {
   // Lista delle prenotazioni con qualche dato leggibile in più su utente, aula, edificio e tavolo
   router.get("/", requireAuth, async (req, res, next) => {
     try {
-      const visibilityFilter = req.auth.role === "admin" ? "" : "WHERE r.user_id = :userId";
+      const visibilityFilter = getReservationVisibilityFilter(req.auth.role);
       const [reservations] = await db.query(`
         SELECT
           r.id,
@@ -27,6 +27,10 @@ function createReservationRoutes(websocketHub) {
           r.reservation_type,
           r.seats_requested,
           r.status,
+          r.checked_in_at,
+          r.checked_out_at,
+          r.checked_in_by,
+          r.checked_out_by,
           r.notes,
           r.created_at,
           r.updated_at
@@ -47,6 +51,15 @@ function createReservationRoutes(websocketHub) {
 
   // Crea una prenotazione scegliendo un tavolo libero nell'aula richiesta
   router.post("/", requireAuth, async (req, res, next) => {
+    if (req.auth.role === "receptionist") {
+      res.status(403).json({
+        error: {
+          message: "La reception puo solo validare le prenotazioni assegnate."
+        }
+      });
+      return;
+    }
+
     const validationError = validateBookingParameters(req.body);
 
     if (validationError) {
@@ -288,6 +301,15 @@ function createReservationRoutes(websocketHub) {
 
   // Cancella logicamente una prenotazione attiva.
   router.delete("/:id", requireAuth, async (req, res, next) => {
+    if (req.auth.role === "receptionist") {
+      res.status(403).json({
+        error: {
+          message: "La reception non puo cancellare prenotazioni."
+        }
+      });
+      return;
+    }
+
     const reservationId = Number(req.params.id);
 
     if (!Number.isInteger(reservationId) || reservationId <= 0) {
@@ -383,6 +405,24 @@ function createReservationRoutes(websocketHub) {
   });
 
   return router;
+}
+
+function getReservationVisibilityFilter(role) {
+  if (role === "admin") {
+    return "";
+  }
+
+  if (role === "receptionist") {
+    return `
+      WHERE b.id IN (
+        SELECT building_id
+        FROM receptionist_assignments
+        WHERE user_id = :userId
+      )
+    `;
+  }
+
+  return "WHERE r.user_id = :userId";
 }
 
 // Validazione base dei dati ricevuti dal client

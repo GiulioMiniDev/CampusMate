@@ -63,7 +63,7 @@ router.post("/register", async (req, res, next) => {
       WHERE id = :userId
     `, { userId: result.insertId });
 
-    const user = toPublicUser(users[0]);
+    const user = await attachReceptionAssignments(toPublicUser(users[0]));
 
     res.status(201).json({
       user,
@@ -124,7 +124,7 @@ router.post("/login", async (req, res, next) => {
       return;
     }
 
-    const user = toPublicUser(users[0]);
+    const user = await attachReceptionAssignments(toPublicUser(users[0]));
 
     res.json({
       user,
@@ -154,7 +154,7 @@ router.get("/me", requireAuth, async (req, res, next) => {
     }
 
     res.json({
-      user: toPublicUser(users[0])
+      user: await attachReceptionAssignments(toPublicUser(users[0]))
     });
   } catch (error) {
     next(error);
@@ -236,7 +236,30 @@ function toPublicUser(user) {
     student_number: user.student_number,
     degree_course: user.degree_course,
     year_of_study: user.year_of_study === null ? null : Number(user.year_of_study),
-    phone: user.phone
+    phone: user.phone,
+    assigned_buildings: []
+  };
+}
+
+async function attachReceptionAssignments(user) {
+  if (user.role !== "receptionist") {
+    return user;
+  }
+
+  const [buildings] = await db.query(`
+    SELECT b.id, b.name, b.code
+    FROM receptionist_assignments ra
+    INNER JOIN buildings b ON b.id = ra.building_id
+    WHERE ra.user_id = :userId
+    ORDER BY b.name
+  `, { userId: user.id });
+
+  return {
+    ...user,
+    assigned_buildings: buildings.map((building) => ({
+      ...building,
+      id: Number(building.id)
+    }))
   };
 }
 

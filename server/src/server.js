@@ -7,6 +7,7 @@ const healthRoutes = require("./routes/healthRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 const buildingRoutes = require("./routes/buildingRoutes");
 const createReservationRoutes = require("./routes/reservationRoutes");
+const createReceptionRoutes = require("./routes/receptionRoutes");
 const { startReservationCleanup } = require("./services/reservationCleanup");
 const createWebSocketHub = require("./websocket/hub");
 
@@ -22,6 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/buildings", buildingRoutes);
 app.use("/api/reservations", createReservationRoutes(websocketHub));
+app.use("/api/reception", createReceptionRoutes(websocketHub));
 
 app.use((req, res) => {
   res.status(404).json({

@@ -2,6 +2,7 @@ CREATE DATABASE IF NOT EXISTS campusmate;
 USE campusmate;
 
 DROP TABLE IF EXISTS reservations;
+DROP TABLE IF EXISTS receptionist_assignments;
 DROP TABLE IF EXISTS study_tables;
 DROP TABLE IF EXISTS study_rooms;
 DROP TABLE IF EXISTS buildings;
@@ -13,7 +14,7 @@ CREATE TABLE users (
     last_name VARCHAR(60) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NULL,
-    role ENUM('student', 'admin') NOT NULL DEFAULT 'student',
+    role ENUM('student', 'admin', 'receptionist') NOT NULL DEFAULT 'student',
     student_number VARCHAR(30) NULL UNIQUE,
     degree_course VARCHAR(120) NULL,
     year_of_study TINYINT UNSIGNED NULL,
@@ -40,6 +41,21 @@ CREATE TABLE buildings (
     status ENUM('open', 'closed', 'maintenance') NOT NULL DEFAULT 'open',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE receptionist_assignments (
+    user_id INT NOT NULL,
+    building_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, building_id),
+    CONSTRAINT fk_receptionist_assignment_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_receptionist_assignment_building
+        FOREIGN KEY (building_id) REFERENCES buildings(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 CREATE TABLE study_rooms (
@@ -91,6 +107,10 @@ CREATE TABLE reservations (
     reservation_type ENUM('individual', 'group') NOT NULL DEFAULT 'individual',
     seats_requested TINYINT UNSIGNED NOT NULL DEFAULT 1,
     status ENUM('active', 'cancelled', 'completed') NOT NULL DEFAULT 'active',
+    checked_in_at DATETIME NULL,
+    checked_out_at DATETIME NULL,
+    checked_in_by INT NULL,
+    checked_out_by INT NULL,
     notes VARCHAR(255) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -103,7 +123,15 @@ CREATE TABLE reservations (
     CONSTRAINT fk_reservation_study_table
         FOREIGN KEY (study_table_id) REFERENCES study_tables(id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_reservation_checked_in_by
+        FOREIGN KEY (checked_in_by) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL,
+    CONSTRAINT fk_reservation_checked_out_by
+        FOREIGN KEY (checked_out_by) REFERENCES users(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
 );
 
 CREATE INDEX idx_study_rooms_building_id ON study_rooms(building_id);
@@ -112,3 +140,5 @@ CREATE INDEX idx_reservations_user_id ON reservations(user_id);
 CREATE INDEX idx_reservations_study_table_id ON reservations(study_table_id);
 CREATE INDEX idx_reservations_time ON reservations(start_time, end_time);
 CREATE INDEX idx_reservations_table_time ON reservations(study_table_id, start_time, end_time);
+CREATE INDEX idx_receptionist_assignments_building_id ON receptionist_assignments(building_id);
+CREATE INDEX idx_reservations_checkin ON reservations(checked_in_at, checked_out_at);

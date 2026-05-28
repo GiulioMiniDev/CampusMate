@@ -27,12 +27,15 @@ export const websocketService = {
           "reservation.created",
           "reservation.cancelled",
           "reservation.completed",
+          "reception.checkin",
+          "reception.checkout",
           "reservation_updated",
           "room.availability.changed",
           "room_updated"
         ];
 
         if (refreshEvents.includes(message.type)) {
+          window.dispatchEvent(new CustomEvent("campusmate:reception-updated", { detail: message }));
           apiService.loadRooms({ background: true }).catch((error) => console.error("Error reloading rooms:", error));
 
           if (state.authToken) {

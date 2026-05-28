@@ -45,7 +45,7 @@
           v-else-if="filteredRooms.length"
           :rooms="filteredRooms"
           :selected-building-code="selectedBuildingCode"
-          :can-reserve="!isAdmin"
+          :can-reserve="isStudent"
           @clear-selection="clearBuildingSelection"
           @reserve="openReservationForm"
         />
@@ -94,7 +94,7 @@ export default {
   },
   computed: {
     isAuthenticated() { return getters.isAuthenticated(); },
-    isAdmin() { return state.currentUser?.role === "admin"; },
+    isStudent() { return state.currentUser?.role === "student"; },
     rooms() { return state.rooms; },
     loadingRooms() { return state.loadingRooms; },
     serviceOptions() {
@@ -206,7 +206,7 @@ export default {
       this.selectedBuildingCode = null;
     },
     openReservationForm(roomId) {
-      if (this.isAdmin) {
+      if (!this.isStudent) {
         mutations.closeReservationForm();
         return;
       }
