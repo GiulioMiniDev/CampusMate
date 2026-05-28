@@ -3,6 +3,7 @@ import AccountView from "./views/AccountView.vue";
 import ReservationsView from "./views/ReservationsView.vue";
 import RoomsView from "./views/RoomsView.vue";
 import AdminDashboard from "./views/AdminDashboard.vue";
+import { state } from "./store.js";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -36,6 +37,12 @@ const router = createRouter({
       redirect: "/aule"
     }
   ]
+});
+
+router.beforeEach((to) => {
+  if (to.path === "/prenotazioni" && state.currentUser?.role === "admin") {
+    return "/aule";
+  }
 });
 
 export default router;

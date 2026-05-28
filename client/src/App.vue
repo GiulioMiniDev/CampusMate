@@ -8,7 +8,7 @@
             <MapPinned class="app-nav-icon" aria-hidden="true" />
             <span>Aule</span>
           </RouterLink>
-          <RouterLink class="app-nav-link" to="/prenotazioni">
+          <RouterLink v-if="!isAdmin" class="app-nav-link" to="/prenotazioni">
             <TicketCheck class="app-nav-icon" aria-hidden="true" />
             <span>Prenotazioni</span>
           </RouterLink>
@@ -49,7 +49,7 @@
     </main>
 
     <ReservationModal
-      v-if="isAuthenticated && showReservationForm"
+      v-if="isAuthenticated && !isAdmin && showReservationForm"
       :form="reservationForm"
       :is-submitting="isSubmitting"
       :form-message="formMessage"
@@ -100,6 +100,7 @@ export default {
     registerForm() { return state.registerForm; },
     currentUserName() { return getters.getCurrentUserName(); },
     currentUser() { return state.currentUser; },
+    isAdmin() { return state.currentUser?.role === "admin"; },
     isAuthenticated() { return getters.isAuthenticated(); },
     health() { return state.health; },
     socketMessages() { return state.socketMessages; },
@@ -140,6 +141,12 @@ export default {
   watch: {
     socketStatus() {
       this.syncFallbackRefresh();
+    },
+    currentUser() {
+      this.ensureAdminRoute();
+    },
+    $route() {
+      this.ensureAdminRoute();
     }
   },
   methods: {
@@ -168,6 +175,11 @@ export default {
 
       websocketService.connect();
       this.syncFallbackRefresh();
+    },
+    ensureAdminRoute() {
+      if (this.isAdmin && this.$route.path === "/prenotazioni") {
+        this.$router.replace("/aule");
+      }
     },
     syncFallbackRefresh() {
       const needsFallback = this.isAuthenticated && ["errore", "chiuso"].includes(this.socketStatus);
@@ -227,9 +239,18 @@ export default {
       mutations.closeReservationForm();
     },
     changeReservationRoom(roomId) {
+      if (this.isAdmin) {
+        return;
+      }
+
       this.openReservationForm(roomId);
     },
     openReservationForm(roomId) {
+      if (this.isAdmin) {
+        mutations.closeReservationForm();
+        return;
+      }
+
       mutations.showReservationForm(roomId);
       apiService.loadRoomDetail(roomId).catch((error) => console.error("Room detail failed:", error));
     },
@@ -247,6 +268,11 @@ export default {
       this.scheduleAvailabilityCheck();
     },
     async submitReservation() {
+      if (this.isAdmin) {
+        mutations.closeReservationForm();
+        return;
+      }
+
       if (!apiService.validateReservationForm()) {
         return;
       }

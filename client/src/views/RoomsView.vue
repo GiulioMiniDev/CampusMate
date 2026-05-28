@@ -45,6 +45,7 @@
           v-else-if="filteredRooms.length"
           :rooms="filteredRooms"
           :selected-building-code="selectedBuildingCode"
+          :can-reserve="!isAdmin"
           @clear-selection="clearBuildingSelection"
           @reserve="openReservationForm"
         />
@@ -93,6 +94,7 @@ export default {
   },
   computed: {
     isAuthenticated() { return getters.isAuthenticated(); },
+    isAdmin() { return state.currentUser?.role === "admin"; },
     rooms() { return state.rooms; },
     loadingRooms() { return state.loadingRooms; },
     serviceOptions() {
@@ -204,6 +206,11 @@ export default {
       this.selectedBuildingCode = null;
     },
     openReservationForm(roomId) {
+      if (this.isAdmin) {
+        mutations.closeReservationForm();
+        return;
+      }
+
       mutations.showReservationForm(roomId);
       apiService.loadRoomDetail(roomId).catch((error) => console.error("Room detail failed:", error));
     },

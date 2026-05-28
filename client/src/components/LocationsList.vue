@@ -98,8 +98,8 @@
               :key="room.id"
               type="button"
               class="location-room-option"
-              :disabled="room.available_seats === 0"
-              @click.stop="$emit('reserve', room.id)"
+              :disabled="!canReserve || room.available_seats === 0"
+              @click.stop="reserveRoom(room.id)"
             >
               <div>
                 <strong>{{ room.name }}</strong>
@@ -127,6 +127,10 @@ export default {
     selectedBuildingCode: {
       type: String,
       default: null
+    },
+    canReserve: {
+      type: Boolean,
+      default: true
     }
   },
   emits: ["clear-selection", "reserve"],
@@ -208,6 +212,13 @@ export default {
     },
     getRoomStatus(room) {
       return getters.getRoomStatus(room);
+    },
+    reserveRoom(roomId) {
+      if (!this.canReserve) {
+        return;
+      }
+
+      this.$emit("reserve", roomId);
     },
     getRoomStatusColor(room) {
       return getters.getRoomStatusColor(room);
