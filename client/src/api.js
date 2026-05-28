@@ -120,6 +120,30 @@ function validateOpeningWindow(form, setMessage) {
   return true;
 }
 
+function hasOverlappingActiveReservation(form) {
+  const startTime = new Date(form.start_time);
+  const endTime = new Date(form.end_time);
+
+  if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
+    return false;
+  }
+
+  return state.reservations.some((reservation) => {
+    if (reservation.status !== "active") {
+      return false;
+    }
+
+    const reservationStart = new Date(String(reservation.start_time).replace(" ", "T"));
+    const reservationEnd = new Date(String(reservation.end_time).replace(" ", "T"));
+
+    if (Number.isNaN(reservationStart.getTime()) || Number.isNaN(reservationEnd.getTime())) {
+      return false;
+    }
+
+    return reservationStart < endTime && reservationEnd > startTime;
+  });
+}
+
 async function makeRequest(method, endpoint, body = null, requireAuth = false) {
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
@@ -329,6 +353,11 @@ export const apiService = {
       return null;
     }
 
+    if (hasOverlappingActiveReservation(form)) {
+      mutations.setAvailabilityMessage("Hai gia una prenotazione attiva in questa fascia oraria.", "error");
+      return null;
+    }
+
     mutations.setAvailabilityLoading(true);
 
     try {
@@ -382,6 +411,11 @@ export const apiService = {
     }
 
     if (!validateOpeningWindow(form, mutations.setFormMessage)) {
+      return false;
+    }
+
+    if (hasOverlappingActiveReservation(form)) {
+      mutations.setFormMessage("Hai gia una prenotazione attiva in questa fascia oraria.", "error");
       return false;
     }
 

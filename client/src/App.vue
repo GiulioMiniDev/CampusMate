@@ -168,9 +168,12 @@ export default {
     },
     async startDashboard() {
       try {
-        await apiService.loadRooms();
+        await Promise.all([
+          apiService.loadRooms(),
+          apiService.loadReservations()
+        ]);
       } catch (error) {
-        console.error("Failed to load rooms:", error);
+        console.error("Failed to load dashboard data:", error);
       }
 
       websocketService.connect();

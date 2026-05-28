@@ -91,6 +91,31 @@ function createReservationRoutes(websocketHub) {
         return;
       }
 
+      const [overlappingUserReservations] = await connection.query(`
+        SELECT id
+        FROM reservations
+        WHERE user_id = :userId
+          AND status = 'active'
+          AND start_time < :endTime
+          AND end_time > :startTime
+        LIMIT 1
+        FOR UPDATE
+      `, {
+        userId,
+        startTime,
+        endTime
+      });
+
+      if (overlappingUserReservations.length > 0) {
+        await connection.rollback();
+        res.status(409).json({
+          error: {
+            message: "Hai gia una prenotazione attiva in questa fascia oraria."
+          }
+        });
+        return;
+      }
+
       // Poi controllo che l'aula esista e che sia aperta
       const [rooms] = await connection.query(`
         SELECT
