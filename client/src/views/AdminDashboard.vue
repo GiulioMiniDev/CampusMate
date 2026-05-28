@@ -725,5 +725,368 @@ export default {
 </script>
 
 <style scoped>
-/* ...existing styles... */
+/* Admin Dashboard Styling */
+
+.cm-panel {
+  padding: 1.5rem;
+}
+
+@media (max-width: 767.98px) {
+  .cm-panel {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .cm-panel {
+    padding: 1rem;
+  }
+}
+
+/* Form Labels */
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+@media (max-width: 575.98px) {
+  .form-label {
+    font-size: 0.85rem;
+  }
+}
+
+/* Form Controls */
+.form-control,
+.form-select {
+  font-size: 0.95rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+  transition: border-color var(--cm-transition), box-shadow var(--cm-transition);
+}
+
+@media (max-width: 575.98px) {
+  .form-control,
+  .form-select {
+    font-size: 16px;
+    padding: 0.65rem 0.75rem;
+  }
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--cm-accent);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.14);
+}
+
+/* Form Groups */
+.mb-3 {
+  margin-bottom: 1.1rem;
+}
+
+@media (max-width: 575.98px) {
+  .mb-3 {
+    margin-bottom: 0.95rem;
+  }
+}
+
+/* Row spacing */
+.row {
+  margin-bottom: 0.5rem;
+}
+
+.row .col-6 {
+  padding-right: 0.6rem;
+}
+
+.row .col-6:last-child {
+  padding-right: 0;
+}
+
+@media (max-width: 575.98px) {
+  .row .col-6 {
+    padding-right: 0.4rem;
+  }
+}
+
+/* Headers */
+h1, h2 {
+  margin-bottom: 0 !important;
+  line-height: 1.3;
+}
+
+.h5 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.h6 {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+@media (max-width: 767.98px) {
+  .h5 {
+    font-size: 0.95rem;
+  }
+
+  .h6 {
+    font-size: 0.85rem;
+  }
+}
+
+/* List Group Items */
+.list-group-item {
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--cm-border);
+  margin-bottom: 0.65rem;
+  border-radius: var(--cm-radius-sm);
+}
+
+@media (max-width: 575.98px) {
+  .list-group-item {
+    padding: 0.8rem 0.9rem;
+    margin-bottom: 0.55rem;
+  }
+}
+
+.list-group-item strong {
+  font-size: 0.95rem;
+  color: #1f2937;
+}
+
+@media (max-width: 575.98px) {
+  .list-group-item strong {
+    font-size: 0.9rem;
+  }
+}
+
+.list-group-item small {
+  font-size: 0.8rem;
+}
+
+@media (max-width: 575.98px) {
+  .list-group-item small {
+    font-size: 0.75rem;
+  }
+}
+
+/* Buttons in list items */
+.list-group-item .cm-button {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+  min-height: 1.9rem;
+}
+
+@media (max-width: 767.98px) {
+  .list-group-item .cm-button {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.55rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .list-group-item .cm-button {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    min-height: 1.75rem;
+    width: 100%;
+    margin-bottom: 0.3rem;
+  }
+
+  .list-group-item .cm-button:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Floorplan Canvas */
+.admin-canvas {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid var(--cm-border);
+  border-radius: var(--cm-radius-md);
+  position: relative;
+}
+
+@media (max-width: 767.98px) {
+  .admin-canvas {
+    height: 300px !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .admin-canvas {
+    height: 250px !important;
+  }
+}
+
+/* Section layout */
+section {
+  margin-bottom: 1.5rem;
+}
+
+/* Paragraphs in panels */
+.cm-panel p {
+  font-size: 0.85rem;
+  margin: 0;
+  color: #64748b;
+}
+
+/* Annulla button styling */
+.btn.btn-link {
+  padding: 0;
+  color: var(--cm-muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.btn.btn-link:hover {
+  color: var(--cm-accent);
+  text-decoration: underline;
+}
+
+/* Column spacing */
+.col-md-5,
+.col-md-6,
+.col-md-7 {
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .col-md-5,
+  .col-md-6,
+  .col-md-7 {
+    margin-bottom: 0;
+  }
+}
+
+/* Flex spacing */
+.d-flex {
+  gap: 0.75rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.25rem !important;
+}
+
+.mb-3 {
+  margin-bottom: 1.1rem !important;
+}
+
+.mt-3 {
+  margin-top: 1rem !important;
+}
+
+@media (max-width: 575.98px) {
+  .mb-4 {
+    margin-bottom: 1rem !important;
+  }
+
+  .mb-3 {
+    margin-bottom: 0.9rem !important;
+  }
+
+  .mt-3 {
+    margin-top: 0.85rem !important;
+  }
+}
+
+/* Alert spacing */
+.cm-alert {
+  font-size: 0.9rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 575.98px) {
+  .cm-alert {
+    font-size: 0.85rem;
+    padding: 0.75rem 0.85rem;
+  }
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 767.98px) {
+  .row.g-4 {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .row.g-4 {
+    gap: 0.75rem;
+  }
+
+  section {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Text and spacing utilities */
+.me-2 {
+  margin-right: 0.65rem;
+}
+
+.me-3 {
+  margin-right: 0.9rem;
+}
+
+@media (max-width: 575.98px) {
+  .me-2 {
+    margin-right: 0.5rem;
+  }
+
+  .me-3 {
+    margin-right: 0.65rem;
+  }
+}
+
+/* Form check inputs */
+.form-check-input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.25rem;
+  border: 1px solid var(--cm-border);
+  border-radius: 0.25rem;
+}
+
+.form-check-input:checked {
+  background-color: var(--cm-accent);
+  border-color: var(--cm-accent);
+}
+
+.form-check-label {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+@media (max-width: 575.98px) {
+  .form-check-label {
+    font-size: 0.9rem;
+  }
+}
+
+/* Primary button full width */
+.cm-button-primary.w-100 {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* Success/Info/Error messages */
+.cm-alert-success,
+.cm-alert-danger,
+.cm-alert-info {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 575.98px) {
+  .cm-alert-success,
+  .cm-alert-danger,
+  .cm-alert-info {
+    font-size: 0.85rem;
+  }
+}
 </style>
