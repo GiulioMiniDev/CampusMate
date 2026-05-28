@@ -1,6 +1,55 @@
 # CampusMate
 
-CampusMate e una dashboard web per monitorare in tempo reale la disponibilita delle aule studio universitarie e creare prenotazioni individuali o di gruppo.
+CampusMate e una dashboard web per monitorare in tempo reale la disponibilita delle aule studio universitarie e gestire prenotazioni individuali o di gruppo.
+
+## Obiettivo
+
+Rendere visibile, aggiornata e prenotabile la disponibilita delle aule studio con un flusso semplice, affidabile e adatto a mobile.
+
+## Feature chiave
+
+- **Disponibilita realtime**: aggiornamenti live via WebSocket con fallback a refresh periodico se la connessione si interrompe.
+- **Prenotazioni guidate**: selezione sede, aula e tavolo con verifica posti e orari in tempo reale.
+- **Filtri intelligenti**: ricerca testuale, servizi, orari e fascia di chiusura per ridurre subito il rumore.
+- **Accesso sicuro**: login con token e ruoli distinti (student/admin).
+- **Mobile first**: layout compatto e navigazione rapida per uso in mobilita.
+
+## Architettura e flusso dati
+
+- **Client**: Vue 3 + Vite per UI reattiva e caricamento rapido.
+- **Server**: Node.js + Express per API REST e gestione autenticazione.
+- **Realtime**: WebSocket per eventi (prenotazioni, disponibilita).
+- **Database**: MySQL per persistenza e query ottimizzate.
+
+Flusso tipico prenotazione:
+1) L'utente sceglie la sede e una fascia oraria.
+2) Il client verifica disponibilita in tempo reale e mostra i tavoli liberi.
+3) Il server applica controlli e lock in transazione per evitare doppie prenotazioni.
+4) La creazione emette eventi realtime per aggiornare liste e contatori.
+
+## Scelte tecniche e motivazioni
+
+- **Transazioni e lock**: garantiscono consistenza quando piu utenti prenotano lo stesso tavolo nello stesso slot.
+- **Calcolo disponibilita**: basato sui posti residui per tavolo, non solo sul conteggio delle prenotazioni.
+- **Time handling coerente**: date salvate in UTC per evitare errori di fuso orario, visualizzate in locale per l'utente.
+- **Fallback realtime**: se il WebSocket e down, il client continua ad aggiornare i dati in background.
+
+## Qualita e robustezza
+
+- **Validazioni**: orari coerenti, stessa giornata, capienza e status di aula/tavolo.
+- **Edge case**: prenotazioni sovrapposte, slot non disponibili, aule chiuse.
+- **UX**: feedback immediato sugli errori e sui posti liberi.
+
+## Criteri progettuali in evidenza
+
+| Area | Scelta progettuale | Perche conta |
+| --- | --- | --- |
+| Consistenza dati | Prenotazioni create in transazione con lock sul tavolo | Evita doppie prenotazioni e incongruenze in concorrenza. |
+| Disponibilita | Calcolo su posti residui per tavolo e fascia oraria | Risultati reali anche con prenotazioni parziali. |
+| Orari | Salvataggio in UTC e visualizzazione locale | Coerenza tra backend, DB e client con fusi orari diversi. |
+| Realtime | WebSocket con fallback a refresh periodico | L'app resta aggiornata anche se la rete e instabile. |
+| UX responsiva | Layout mobile-first e navigazione veloce | Usabilita in mobilita durante la ricerca di aule. |
+| Sicurezza base | Token JWT per API e ruoli | Accesso controllato a prenotazioni e funzioni admin. |
 
 ## Stack
 
