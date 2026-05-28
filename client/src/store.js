@@ -294,7 +294,13 @@ export function parseDateTime(value) {
     return null;
   }
 
-  const normalized = String(value).replace(" ", "T");
+  const stringValue = String(value);
+  let normalized = stringValue.replace(" ", "T");
+
+  if (!/[zZ]|[+-]\d{2}:?\d{2}$/.test(normalized)) {
+    normalized = `${normalized}Z`;
+  }
+
   const parsed = new Date(normalized);
 
   return Number.isNaN(parsed.getTime()) ? null : parsed;

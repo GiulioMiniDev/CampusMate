@@ -7,6 +7,7 @@ const healthRoutes = require("./routes/healthRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 const buildingRoutes = require("./routes/buildingRoutes");
 const createReservationRoutes = require("./routes/reservationRoutes");
+const { startReservationCleanup } = require("./services/reservationCleanup");
 const createWebSocketHub = require("./websocket/hub");
 
 const app = express();
@@ -43,4 +44,8 @@ app.use((error, req, res, next) => {
 server.listen(env.port, () => {
   console.log(`CampusMate server avviato su http://localhost:${env.port}`);
   console.log(`WebSocket disponibile su ws://localhost:${env.port}`);
+});
+
+startReservationCleanup(websocketHub, {
+  intervalMs: env.reservationCleanupIntervalMs
 });

@@ -1,7 +1,17 @@
-import { mutations, state } from "./store.js";
+import { mutations, parseDateTime, state } from "./store.js";
 
 function getLocalDatePart(value) {
   return value ? String(value).slice(0, 10) : "";
+}
+
+function toUtcDateTimeString(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toISOString().slice(0, 19).replace("T", " ");
 }
 
 function getCurrentMinute() {
@@ -133,10 +143,10 @@ function hasOverlappingActiveReservation(form) {
       return false;
     }
 
-    const reservationStart = new Date(String(reservation.start_time).replace(" ", "T"));
-    const reservationEnd = new Date(String(reservation.end_time).replace(" ", "T"));
+    const reservationStart = parseDateTime(reservation.start_time);
+    const reservationEnd = parseDateTime(reservation.end_time);
 
-    if (Number.isNaN(reservationStart.getTime()) || Number.isNaN(reservationEnd.getTime())) {
+    if (!reservationStart || !reservationEnd) {
       return false;
     }
 
@@ -255,8 +265,8 @@ export const apiService = {
       const params = new URLSearchParams();
 
       if (slot?.start_time && slot?.end_time) {
-        params.set("start_time", slot.start_time);
-        params.set("end_time", slot.end_time);
+        params.set("start_time", toUtcDateTimeString(slot.start_time));
+        params.set("end_time", toUtcDateTimeString(slot.end_time));
       }
 
       const endpoint = params.toString() ? `/api/rooms?${params.toString()}` : "/api/rooms";
@@ -302,7 +312,13 @@ export const apiService = {
   async createReservation(reservationData) {
     mutations.setIsSubmitting(true);
     try {
-      const response = await makeRequest("POST", "/api/reservations", reservationData, true);
+      const payload = {
+        ...reservationData,
+        start_time: toUtcDateTimeString(reservationData.start_time),
+        end_time: toUtcDateTimeString(reservationData.end_time)
+      };
+
+      const response = await makeRequest("POST", "/api/reservations", payload, true);
       mutations.setFormMessage("Prenotazione creata con successo.", "success");
       this.loadReservations().catch((error) => console.error("Reservations reload failed:", error));
       return response;
@@ -362,8 +378,8 @@ export const apiService = {
 
     try {
       const params = new URLSearchParams({
-        start_time: form.start_time,
-        end_time: form.end_time,
+        start_time: toUtcDateTimeString(form.start_time),
+        end_time: toUtcDateTimeString(form.end_time),
         seats_requested: String(form.seats_requested)
       });
 

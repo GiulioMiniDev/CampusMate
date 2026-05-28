@@ -1,13 +1,48 @@
+const APP_TIME_ZONE = "Europe/Rome";
+
+function parseDateTimeValue(value) {
+  if (value instanceof Date) {
+    return value;
+  }
+
+  const stringValue = value === undefined || value === null ? "" : String(value);
+
+  if (!stringValue) {
+    return new Date("invalid");
+  }
+
+  if (/[zZ]|[+-]\d{2}:?\d{2}$/.test(stringValue)) {
+    return new Date(stringValue);
+  }
+
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(stringValue)) {
+    return new Date(`${stringValue.replace(" ", "T")}Z`);
+  }
+
+  return new Date(stringValue);
+}
+
+function getDatePartInZone(date) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+
+  return formatter.format(date);
+}
+
 function validateBookingParameters(params) {
   const roomId = Number(params.room_id);
   const requestedTableId = params.study_table_id === undefined || params.study_table_id === null ? null : Number(params.study_table_id);
   const seatsRequested = Number(params.seats_requested || 1);
-  const startTime = new Date(params.start_time);
-  const endTime = new Date(params.end_time);
+  const startTime = parseDateTimeValue(params.start_time);
+  const endTime = parseDateTimeValue(params.end_time);
   const reservationType = params.reservation_type;
 
   if (!Number.isInteger(roomId) || roomId <= 0) {
-    return "room_id è obbligatorio e deve essere un numero positivo.";
+    return "room_id ï¿½ obbligatorio e deve essere un numero positivo.";
   }
 
   if (requestedTableId !== null && (!Number.isInteger(requestedTableId) || requestedTableId <= 0)) {
@@ -51,11 +86,11 @@ function getLocalDatePart(value, parsedDate) {
   const stringValue = value === undefined || value === null ? "" : String(value);
   const dateMatch = stringValue.match(/^(\d{4}-\d{2}-\d{2})/);
 
-  if (dateMatch) {
-    return dateMatch[1];
+  if (parsedDate && !Number.isNaN(parsedDate.getTime())) {
+    return getDatePartInZone(parsedDate);
   }
 
-  return parsedDate.toISOString().slice(0, 10);
+  return dateMatch ? dateMatch[1] : "";
 }
 
 function getCurrentMinute() {

@@ -1,3 +1,27 @@
+const APP_TIME_ZONE = "Europe/Rome";
+
+function parseDateTimeValue(value) {
+  if (value instanceof Date) {
+    return value;
+  }
+
+  const stringValue = value === undefined || value === null ? "" : String(value);
+
+  if (!stringValue) {
+    return new Date("invalid");
+  }
+
+  if (/[zZ]|[+-]\d{2}:?\d{2}$/.test(stringValue)) {
+    return new Date(stringValue);
+  }
+
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(stringValue)) {
+    return new Date(`${stringValue.replace(" ", "T")}Z`);
+  }
+
+  return new Date(stringValue);
+}
+
 function getTimeMinutes(value) {
   const match = String(value || "").match(/(\d{1,2})[:.](\d{2})/);
 
@@ -22,8 +46,34 @@ function getTimeRangeMinutes(text) {
 }
 
 function getDatePart(value) {
+  const parsed = parseDateTimeValue(value);
+
+  if (parsed && !Number.isNaN(parsed.getTime())) {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: APP_TIME_ZONE,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(parsed);
+  }
+
   const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
   return match ? match[0] : "";
+}
+
+function getTimeMinutesInZone(date) {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: APP_TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  });
+
+  const parts = formatter.formatToParts(date);
+  const hours = Number(parts.find((part) => part.type === "hour")?.value || 0);
+  const minutes = Number(parts.find((part) => part.type === "minute")?.value || 0);
+
+  return hours * 60 + minutes;
 }
 
 function getOpeningWindow(building, startTime) {
@@ -88,8 +138,15 @@ function validateOpeningHours(building, startTime, endTime) {
     return "L'aula studio risulta chiusa nel giorno selezionato.";
   }
 
-  const startMinutes = getTimeMinutes(startTime);
-  const endMinutes = getTimeMinutes(endTime);
+  const startDate = parseDateTimeValue(startTime);
+  const endDate = parseDateTimeValue(endTime);
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return null;
+  }
+
+  const startMinutes = getTimeMinutesInZone(startDate);
+  const endMinutes = getTimeMinutesInZone(endDate);
 
   if (startMinutes === null || endMinutes === null) {
     return null;
