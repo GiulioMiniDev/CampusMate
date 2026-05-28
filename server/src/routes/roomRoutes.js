@@ -8,7 +8,22 @@ const router = express.Router();
 
 // Query base usata sia per la lista delle aule sia per il dettaglio.
 // La dashboard scala i posti prenotati, non l'intera capienza del tavolo.
-const roomSelect = `
+function getReservationOverlapClause(hasSlot) {
+  if (hasSlot) {
+    return `
+      AND start_time < :endTime
+      AND end_time > :startTime
+    `;
+  }
+
+  return `
+      AND start_time <= NOW()
+      AND end_time > NOW()
+    `;
+}
+
+function getRoomSelect(hasSlot = false) {
+  return `
   SELECT
     sr.id,
     sr.name,
@@ -47,10 +62,11 @@ const roomSelect = `
     SELECT study_table_id, SUM(seats_requested) AS seats_reserved
     FROM reservations
     WHERE status = 'active'
-      AND end_time > NOW()
+      ${getReservationOverlapClause(hasSlot)}
     GROUP BY study_table_id
   ) active_reservations ON active_reservations.study_table_id = st.id
 `;
+}
 
 function normalizeRoom(room) {
   return {
@@ -66,14 +82,24 @@ function normalizeRoom(room) {
 // Restituisce tutte le aule studio con edificio, stato e disponibilità
 router.get("/", async (req, res, next) => {
   try {
+    const slot = getAvailabilitySlot(req.query);
     const [rooms] = await db.query(`
-      ${roomSelect}
+      ${getRoomSelect(Boolean(slot))}
       GROUP BY sr.id, b.id
       ORDER BY b.name, sr.floor_label, sr.name
-    `);
+    `, slot || {});
 
-    res.json(rooms.map(normalizeRoom));
+    res.json(rooms.map((room) => normalizeRoomForSlot(room, slot)));
   } catch (error) {
+    if (error.status) {
+      res.status(error.status).json({
+        error: {
+          message: error.message
+        }
+      });
+      return;
+    }
+
     next(error);
   }
 });
@@ -210,7 +236,7 @@ router.get("/:id", async (req, res, next) => {
     }
 
     const [rooms] = await db.query(`
-      ${roomSelect}
+      ${getRoomSelect()}
       WHERE sr.id = :roomId
       GROUP BY sr.id, b.id
     `, { roomId });
@@ -250,6 +276,7 @@ router.get("/:id", async (req, res, next) => {
         SELECT study_table_id, SUM(seats_requested) AS seats_reserved
         FROM reservations
         WHERE status = 'active'
+          AND start_time <= NOW()
           AND end_time > NOW()
         GROUP BY study_table_id
       ) active_reservations ON active_reservations.study_table_id = st.id
@@ -379,6 +406,46 @@ router.put("/:id", requireAuth, updateRoom);
 router.post("/:id", requireAuth, updateRoom);
 
 module.exports = router;
+
+function getAvailabilitySlot(query) {
+  const startTime = query.start_time;
+  const endTime = query.end_time;
+
+  if (!startTime && !endTime) {
+    return null;
+  }
+
+  const validationError = validateBookingParameters({
+    room_id: 1,
+    start_time: startTime,
+    end_time: endTime,
+    seats_requested: 1
+  });
+
+  if (validationError) {
+    const error = new Error(validationError);
+    error.status = 400;
+    throw error;
+  }
+
+  return {
+    startTime,
+    endTime
+  };
+}
+
+function normalizeRoomForSlot(room, slot) {
+  const normalizedRoom = normalizeRoom(room);
+
+  if (slot && validateOpeningHours(normalizedRoom, slot.startTime, slot.endTime)) {
+    return {
+      ...normalizedRoom,
+      available_seats: 0
+    };
+  }
+
+  return normalizedRoom;
+}
 
 function normalizeTable(table) {
   return {

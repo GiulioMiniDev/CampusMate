@@ -1,7 +1,5 @@
 <template>
   <template v-if="isAuthenticated">
-    <HeroStats :total-rooms="totalRooms" :available-seats="availableSeats" />
-
     <section class="mb-5">
       <div v-if="loadingRooms" class="cm-alert cm-alert-info">
         <div class="spinner-border spinner-border-sm me-2" role="status"></div>
@@ -65,7 +63,6 @@
 
 <script>
 import CampusMap from "../components/CampusMap.vue";
-import HeroStats from "../components/HeroStats.vue";
 import LocationsList from "../components/LocationsList.vue";
 import RoomFilters from "../components/RoomFilters.vue";
 import { apiService } from "../api.js";
@@ -75,7 +72,6 @@ export default {
   name: "RoomsView",
   components: {
     CampusMap,
-    HeroStats,
     LocationsList,
     RoomFilters
   },
@@ -87,16 +83,18 @@ export default {
         query: "",
         services: [],
         closing: "",
-        onlyAvailable: false
-      }
+        onlyAvailable: false,
+        date: "",
+        startClock: "",
+        endClock: ""
+      },
+      roomSlotReloadTimer: null
     };
   },
   computed: {
     isAuthenticated() { return getters.isAuthenticated(); },
     rooms() { return state.rooms; },
     loadingRooms() { return state.loadingRooms; },
-    totalRooms() { return state.totalRooms; },
-    availableSeats() { return state.availableSeats; },
     serviceOptions() {
       const services = new Set();
 
@@ -113,14 +111,41 @@ export default {
         this.filters.query.trim(),
         this.filters.closing,
         this.filters.onlyAvailable,
+        this.filters.date || this.filters.startClock || this.filters.endClock,
         ...this.filters.services
       ].filter(Boolean).length;
+    },
+    availabilitySlot() {
+      if (!this.filters.date || !this.filters.startClock || !this.filters.endClock) {
+        return null;
+      }
+
+      const startTime = `${this.filters.date}T${this.filters.startClock}`;
+      const endTime = `${this.filters.date}T${this.filters.endClock}`;
+
+      if (new Date(startTime) >= new Date(endTime)) {
+        return null;
+      }
+
+      if (new Date(startTime) < getCurrentMinute()) {
+        return null;
+      }
+
+      return {
+        start_time: startTime,
+        end_time: endTime
+      };
+    },
+    availabilitySlotKey() {
+      return this.availabilitySlot
+        ? `${this.availabilitySlot.start_time}|${this.availabilitySlot.end_time}`
+        : "";
     },
     filteredRooms() {
       const query = normalizeSearch(this.filters.query);
 
       return this.rooms.filter((room) => {
-        if (this.filters.onlyAvailable && Number(room.available_seats || 0) <= 0) {
+        if ((this.filters.onlyAvailable || this.availabilitySlot) && Number(room.available_seats || 0) <= 0) {
           return false;
         }
 
@@ -151,6 +176,23 @@ export default {
       if (!stillVisible) {
         this.selectedBuildingCode = null;
       }
+    },
+    availabilitySlotKey() {
+      if (this.roomSlotReloadTimer) {
+        clearTimeout(this.roomSlotReloadTimer);
+      }
+
+      this.roomSlotReloadTimer = setTimeout(() => {
+        apiService.loadRooms({
+          background: true,
+          availabilitySlot: this.availabilitySlot
+        }).catch((error) => console.error("Rooms slot reload failed:", error));
+      }, 250);
+    }
+  },
+  unmounted() {
+    if (this.roomSlotReloadTimer) {
+      clearTimeout(this.roomSlotReloadTimer);
     }
   },
   methods: {
@@ -170,7 +212,10 @@ export default {
         query: "",
         services: [],
         closing: "",
-        onlyAvailable: false
+        onlyAvailable: false,
+        date: "",
+        startClock: "",
+        endClock: ""
       };
     },
     roomMatchesQuery(room, query) {
@@ -245,5 +290,11 @@ function parseClosingMinutes(hours) {
 function hasWeekendHours(hours) {
   const normalized = normalizeSearch(hours);
   return Boolean(normalized && !["chiuso", "closed", "-"].includes(normalized));
+}
+
+function getCurrentMinute() {
+  const now = new Date();
+  now.setSeconds(0, 0);
+  return now;
 }
 </script>

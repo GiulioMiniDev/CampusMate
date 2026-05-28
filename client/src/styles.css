@@ -324,101 +324,9 @@ body {
   font-size: 0.85rem;
 }
 
-.hero-card {
-  background: linear-gradient(135deg, #ffffff 0%, #eef5ff 100%);
-  border: 1px solid var(--cm-border);
-  box-shadow: var(--cm-shadow-sm);
-  padding: 0.55rem 0.75rem;
-  word-wrap: break-word;
-}
-
-.hero-card-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.hero-copy {
-  min-width: 0;
-}
-
-.hero-card h1 {
-  font-size: 1rem;
-  line-height: 1.15;
-}
-
-.hero-card .tracking {
-  font-size: 0.62rem;
-  line-height: 1;
-}
-
-@media (max-width: 767.98px) {
-  .hero-card {
-    padding: 0.5rem 0.65rem;
-    margin-bottom: 0.65rem;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .hero-card {
-    padding: 0.45rem 0.55rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .hero-card h1 {
-    font-size: 0.95rem;
-  }
-
-  .hero-card .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .hero-card .stat-card {
-    padding: 0.35rem 0.45rem;
-  }
-
-  .hero-card .stat-value {
-    font-size: 0.9rem;
-  }
-
-  .hero-card .stat-label {
-    font-size: 0.6rem;
-  }
-}
-
 .tracking {
   color: var(--cm-accent);
   letter-spacing: 0.08em;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.4rem;
-}
-
-.stat-card {
-  min-width: 4.4rem;
-  padding: 0.42rem 0.55rem;
-  border: 1px solid var(--cm-border);
-  border-radius: var(--cm-radius-sm);
-  background: var(--cm-card);
-  text-align: center;
-  box-shadow: var(--cm-shadow-sm);
-}
-
-.stat-value {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--cm-accent);
-  line-height: 1;
-  margin-bottom: 0.12rem;
-}
-
-.stat-label {
-  font-size: 0.62rem;
-  color: var(--cm-muted);
 }
 
 .room-card {
@@ -663,6 +571,65 @@ body {
   letter-spacing: 0.06em;
   line-height: 1;
   text-transform: uppercase;
+}
+
+.room-filter-slot {
+  display: grid;
+  grid-template-columns: minmax(9.5rem, 1.2fr) repeat(2, minmax(5.5rem, 0.75fr)) auto;
+  gap: 0.45rem;
+  align-items: end;
+}
+
+.room-filter-time-field {
+  display: grid;
+  gap: 0.22rem;
+  min-width: 0;
+}
+
+.room-filter-time-field span {
+  color: var(--cm-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.room-filter-time-field input {
+  width: 100%;
+  min-height: 2.15rem;
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+  padding: 0.38rem 0.52rem;
+  background: #ffffff;
+  color: var(--cm-ink);
+  font: inherit;
+  font-size: 0.78rem;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+}
+
+.room-filter-time-field input:focus {
+  border-color: var(--cm-accent);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+  outline: 0;
+}
+
+.room-filter-slot-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  min-height: 2.15rem;
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+  padding: 0.36rem 0.58rem;
+  background: var(--cm-muted-soft);
+  color: var(--cm-muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.room-filter-slot-clear svg {
+  width: 13px;
+  height: 13px;
 }
 
 .room-filter-strip {
@@ -1677,22 +1644,6 @@ body {
     padding: 1.5rem;
   }
 
-  .hero-card {
-    padding: 0.5rem 0.65rem;
-  }
-
-  .stats-grid {
-    gap: 0.4rem;
-  }
-
-  .stat-card {
-    padding: 0.42rem 0.55rem;
-  }
-
-  .stat-value {
-    font-size: 1rem;
-  }
-
   .display-5 {
     font-size: 2rem;
   }
@@ -1782,6 +1733,10 @@ body {
     padding: 0.62rem;
   }
 
+  .room-filter-slot {
+    grid-template-columns: 1fr;
+  }
+
   .room-filter-strip {
     flex-wrap: wrap;
     gap: 0.32rem;
@@ -1797,10 +1752,6 @@ body {
     flex-direction: column;
     gap: 0.42rem;
     font-size: 0.7rem;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
   }
 
   .reservation-card-title {
@@ -1848,23 +1799,6 @@ body {
 
   .reservation-details {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.4rem;
-  }
-
-  .stat-card {
-    padding: 0.42rem 0.55rem;
-  }
-
-  .stat-value {
-    font-size: 1rem;
-  }
-
-  .hero-card {
-    padding: 0.55rem 0.75rem;
   }
 
   .display-5 {

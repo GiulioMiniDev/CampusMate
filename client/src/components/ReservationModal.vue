@@ -39,33 +39,7 @@
           </div>
         </section>
 
-        <div v-if="floorplanTables.length" class="floorplan-scroll mb-3">
-          <RoomFloorPlan
-            :tables="floorplanTables"
-            :selected-table-id="form.study_table_id"
-            :has-slot-availability="Boolean(availability.result?.tables)"
-            @select-table="$emit('select-table', $event)"
-          />
-        </div>
-
-        <div v-else class="cm-alert cm-alert-muted">
-          Caricamento planimetria aula...
-        </div>
-
         <form @submit.prevent="$emit('submit')">
-          <div v-if="buildingRooms.length" class="mb-3">
-            <label class="form-label cm-label">Aula</label>
-            <select
-              :value="form.room_id"
-              class="form-select cm-field"
-              @change="$emit('change-room', Number($event.target.value))"
-            >
-              <option v-for="buildingRoom in buildingRooms" :key="buildingRoom.id" :value="buildingRoom.id">
-                {{ buildingRoom.name }} - Piano {{ buildingRoom.floor }} - {{ buildingRoom.available_seats }}/{{ buildingRoom.total_seats }} posti
-              </option>
-            </select>
-          </div>
-
           <div class="mb-3">
             <label class="form-label cm-label">Giorno prenotazione</label>
             <input
@@ -85,6 +59,7 @@
                 v-model="startClock"
                 type="time"
                 class="form-control cm-field"
+                :min="minStartClock"
                 required
                 @change="$emit('check-availability')"
               >
@@ -95,10 +70,37 @@
                 v-model="endClock"
                 type="time"
                 class="form-control cm-field"
+                :min="minEndClock"
                 required
                 @change="$emit('check-availability')"
               >
             </div>
+          </div>
+
+          <div v-if="buildingRooms.length" class="mb-3">
+            <label class="form-label cm-label">Aula</label>
+            <select
+              :value="form.room_id"
+              class="form-select cm-field"
+              @change="$emit('change-room', Number($event.target.value))"
+            >
+              <option v-for="buildingRoom in buildingRooms" :key="buildingRoom.id" :value="buildingRoom.id">
+                {{ buildingRoom.name }} - Piano {{ buildingRoom.floor }} - {{ buildingRoom.available_seats }}/{{ buildingRoom.total_seats }} posti
+              </option>
+            </select>
+          </div>
+
+          <div v-if="floorplanTables.length" class="floorplan-scroll mb-3">
+            <RoomFloorPlan
+              :tables="floorplanTables"
+              :selected-table-id="form.study_table_id"
+              :has-slot-availability="Boolean(availability.result?.tables)"
+              @select-table="$emit('select-table', $event)"
+            />
+          </div>
+
+          <div v-else class="cm-alert cm-alert-muted">
+            Caricamento planimetria aula...
           </div>
 
           <div class="mb-3">
@@ -228,12 +230,23 @@ export default {
       return this.availability.type === "error" ? "cm-alert-danger" : "cm-alert-info";
     },
     today() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
+      return this.formatLocalDate(new Date());
+    },
+    currentClock() {
+      return this.formatLocalTime(new Date());
+    },
+    isTodaySelected() {
+      return this.reservationDate === this.today;
+    },
+    minStartClock() {
+      return this.isTodaySelected ? this.currentClock : null;
+    },
+    minEndClock() {
+      if (this.startClock) {
+        return this.startClock;
+      }
 
-      return `${year}-${month}-${day}`;
+      return this.isTodaySelected ? this.currentClock : null;
     },
     reservationDate: {
       get() {
@@ -241,8 +254,8 @@ export default {
       },
       set(date) {
         const nextDate = date || "";
-        const start = this.startClock || "09:00";
-        const end = this.endClock || "10:00";
+        const start = this.normalizeStartClock(nextDate, this.startClock || "09:00");
+        const end = this.normalizeEndClock(nextDate, start, this.endClock || "10:00");
 
         this.form.start_time = nextDate ? `${nextDate}T${start}` : "";
         this.form.end_time = nextDate ? `${nextDate}T${end}` : "";
@@ -254,10 +267,11 @@ export default {
       },
       set(time) {
         const date = this.reservationDate || this.today;
-        this.form.start_time = time ? `${date}T${time}` : "";
+        const start = time ? this.normalizeStartClock(date, time) : "";
+        this.form.start_time = start ? `${date}T${start}` : "";
 
-        if (this.form.end_time && this.getDatePart(this.form.end_time) !== date) {
-          this.form.end_time = `${date}T${this.endClock}`;
+        if (start && (!this.form.end_time || this.getDatePart(this.form.end_time) !== date || this.endClock <= start)) {
+          this.form.end_time = `${date}T${this.addMinutesToClock(start, 60)}`;
         }
       }
     },
@@ -267,7 +281,8 @@ export default {
       },
       set(time) {
         const date = this.reservationDate || this.today;
-        this.form.end_time = time ? `${date}T${time}` : "";
+        const end = time ? this.normalizeEndClock(date, this.startClock, time) : "";
+        this.form.end_time = end ? `${date}T${end}` : "";
       }
     },
     building() {
@@ -303,6 +318,47 @@ export default {
     },
     getTimePart(value) {
       return value ? String(value).slice(11, 16) : "";
+    },
+    formatLocalDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    },
+    formatLocalTime(date) {
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+
+      return `${hours}:${minutes}`;
+    },
+    normalizeStartClock(date, time) {
+      if (date === this.today && time < this.currentClock) {
+        return this.currentClock;
+      }
+
+      return time;
+    },
+    normalizeEndClock(date, start, time) {
+      const normalizedStart = start || this.normalizeStartClock(date, this.currentClock);
+
+      if (date === this.today && time < this.currentClock) {
+        return this.addMinutesToClock(this.currentClock, 60);
+      }
+
+      if (normalizedStart && time <= normalizedStart) {
+        return this.addMinutesToClock(normalizedStart, 60);
+      }
+
+      return time;
+    },
+    addMinutesToClock(time, minutesToAdd) {
+      const [hours, minutes] = String(time || "00:00").split(":").map(Number);
+      const totalMinutes = Math.min((hours * 60) + minutes + minutesToAdd, (23 * 60) + 59);
+      const nextHours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+      const nextMinutes = String(totalMinutes % 60).padStart(2, "0");
+
+      return `${nextHours}:${nextMinutes}`;
     }
   }
 };

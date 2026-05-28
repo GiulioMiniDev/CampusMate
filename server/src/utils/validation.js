@@ -22,6 +22,10 @@ function validateBookingParameters(params) {
     return "end_time deve essere successivo a start_time.";
   }
 
+  if (startTime < getCurrentMinute()) {
+    return "La prenotazione non puo iniziare nel passato.";
+  }
+
   if (getLocalDatePart(params.start_time, startTime) !== getLocalDatePart(params.end_time, endTime)) {
     return "La prenotazione deve iniziare e finire nello stesso giorno.";
   }
@@ -52,6 +56,12 @@ function getLocalDatePart(value, parsedDate) {
   }
 
   return parsedDate.toISOString().slice(0, 10);
+}
+
+function getCurrentMinute() {
+  const now = new Date();
+  now.setSeconds(0, 0);
+  return now;
 }
 
 module.exports = {

@@ -37,6 +37,7 @@ export const state = reactive({
   reservationsMessage: null,
   selectedRoomDetail: null,
   loadingRooms: false,
+  roomsAvailabilitySlot: null,
   totalRooms: 0,
   availableSeats: 0,
   showReservationForm: false,
@@ -185,6 +186,10 @@ export const mutations = {
 
   setLoadingRooms(loading) {
     state.loadingRooms = loading;
+  },
+
+  setRoomsAvailabilitySlot(slot) {
+    state.roomsAvailabilitySlot = slot;
   },
 
   updateStats() {

@@ -4,6 +4,12 @@ function getLocalDatePart(value) {
   return value ? String(value).slice(0, 10) : "";
 }
 
+function getCurrentMinute() {
+  const now = new Date();
+  now.setSeconds(0, 0);
+  return now;
+}
+
 function getTimeMinutes(value) {
   const match = String(value || "").match(/(\d{1,2})[:.](\d{2})/);
 
@@ -211,13 +217,26 @@ export const apiService = {
     }
   },
 
-  async loadRooms({ background = false } = {}) {
+  async loadRooms({ background = false, availabilitySlot } = {}) {
     if (!background) {
       mutations.setLoadingRooms(true);
     }
 
+    if (availabilitySlot !== undefined) {
+      mutations.setRoomsAvailabilitySlot(availabilitySlot);
+    }
+
     try {
-      const rooms = await makeRequest("GET", "/api/rooms");
+      const slot = state.roomsAvailabilitySlot;
+      const params = new URLSearchParams();
+
+      if (slot?.start_time && slot?.end_time) {
+        params.set("start_time", slot.start_time);
+        params.set("end_time", slot.end_time);
+      }
+
+      const endpoint = params.toString() ? `/api/rooms?${params.toString()}` : "/api/rooms";
+      const rooms = await makeRequest("GET", endpoint);
       mutations.setRooms(rooms);
       mutations.updateStats();
       return rooms;
@@ -296,6 +315,11 @@ export const apiService = {
       return null;
     }
 
+    if (new Date(form.start_time) < getCurrentMinute()) {
+      mutations.setAvailabilityMessage("Seleziona una data e un orario futuri.", "error");
+      return null;
+    }
+
     if (getLocalDatePart(form.start_time) !== getLocalDatePart(form.end_time)) {
       mutations.setAvailabilityMessage("La prenotazione deve iniziare e finire nello stesso giorno.", "error");
       return null;
@@ -344,6 +368,11 @@ export const apiService = {
 
     if (new Date(form.start_time) >= new Date(form.end_time)) {
       mutations.setFormMessage("L'orario di fine deve essere dopo quello di inizio", "error");
+      return false;
+    }
+
+    if (new Date(form.start_time) < getCurrentMinute()) {
+      mutations.setFormMessage("Seleziona una data e un orario futuri.", "error");
       return false;
     }
 

@@ -37,6 +37,44 @@
     <div v-show="filtersOpen" class="room-filter-panel">
       <div class="room-filter-group">
         <div class="room-filter-group-title">Orari e disponibilita</div>
+        <div class="room-filter-slot" aria-label="Fascia oraria disponibilita">
+          <label class="room-filter-time-field">
+            <span>Giorno</span>
+            <input
+              :value="filters.date"
+              type="date"
+              :min="today"
+              @input="updateFilter('date', $event.target.value)"
+            >
+          </label>
+          <label class="room-filter-time-field">
+            <span>Da</span>
+            <input
+              :value="filters.startClock"
+              type="time"
+              :min="minStartClock"
+              @input="updateStartClock($event.target.value)"
+            >
+          </label>
+          <label class="room-filter-time-field">
+            <span>A</span>
+            <input
+              :value="filters.endClock"
+              type="time"
+              :min="minEndClock"
+              @input="updateEndClock($event.target.value)"
+            >
+          </label>
+          <button
+            v-if="filters.date || filters.startClock || filters.endClock"
+            type="button"
+            class="room-filter-slot-clear"
+            @click="clearSlot"
+          >
+            <X aria-hidden="true" />
+            Ora
+          </button>
+        </div>
         <div class="room-filter-strip" aria-label="Filtri disponibilita e orari">
           <button
             type="button"
@@ -135,6 +173,25 @@ export default {
   computed: {
     visibleServiceOptions() {
       return this.serviceOptions.slice(0, 10);
+    },
+    today() {
+      return this.formatLocalDate(new Date());
+    },
+    currentClock() {
+      return this.formatLocalTime(new Date());
+    },
+    isTodaySelected() {
+      return this.filters.date === this.today;
+    },
+    minStartClock() {
+      return this.isTodaySelected ? this.currentClock : null;
+    },
+    minEndClock() {
+      if (this.filters.startClock) {
+        return this.filters.startClock;
+      }
+
+      return this.isTodaySelected ? this.currentClock : null;
     }
   },
   methods: {
@@ -153,6 +210,71 @@ export default {
     },
     toggleClosing(value) {
       this.updateFilter("closing", this.filters.closing === value ? "" : value);
+    },
+    updateStartClock(time) {
+      const startClock = this.normalizeStartClock(time);
+      const nextFilters = {
+        ...this.filters,
+        startClock
+      };
+
+      if (startClock && (!this.filters.endClock || this.filters.endClock <= startClock)) {
+        nextFilters.endClock = this.addMinutesToClock(startClock, 60);
+      }
+
+      this.$emit("update:filters", nextFilters);
+    },
+    updateEndClock(time) {
+      this.updateFilter("endClock", this.normalizeEndClock(time));
+    },
+    clearSlot() {
+      this.$emit("update:filters", {
+        ...this.filters,
+        date: "",
+        startClock: "",
+        endClock: ""
+      });
+    },
+    formatLocalDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    },
+    formatLocalTime(date) {
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+
+      return `${hours}:${minutes}`;
+    },
+    normalizeStartClock(time) {
+      if (this.isTodaySelected && time < this.currentClock) {
+        return this.currentClock;
+      }
+
+      return time;
+    },
+    normalizeEndClock(time) {
+      const startClock = this.filters.startClock;
+
+      if (this.isTodaySelected && time < this.currentClock) {
+        return this.addMinutesToClock(this.currentClock, 60);
+      }
+
+      if (startClock && time <= startClock) {
+        return this.addMinutesToClock(startClock, 60);
+      }
+
+      return time;
+    },
+    addMinutesToClock(time, minutesToAdd) {
+      const [hours, minutes] = String(time || "00:00").split(":").map(Number);
+      const totalMinutes = Math.min((hours * 60) + minutes + minutesToAdd, (23 * 60) + 59);
+      const nextHours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+      const nextMinutes = String(totalMinutes % 60).padStart(2, "0");
+
+      return `${nextHours}:${nextMinutes}`;
     },
     getServiceIconDefinition(service) {
       if (!service) {
