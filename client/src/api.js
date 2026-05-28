@@ -1,5 +1,119 @@
 import { mutations, state } from "./store.js";
 
+function getLocalDatePart(value) {
+  return value ? String(value).slice(0, 10) : "";
+}
+
+function getTimeMinutes(value) {
+  const match = String(value || "").match(/(\d{1,2})[:.](\d{2})/);
+
+  if (!match) {
+    return null;
+  }
+
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function getTimeRangeMinutes(text) {
+  const matches = String(text || "").match(/\d{1,2}[:.]\d{2}/g);
+
+  if (!matches || matches.length < 2) {
+    return null;
+  }
+
+  return {
+    opens: getTimeMinutes(matches[0]),
+    closes: getTimeMinutes(matches[1])
+  };
+}
+
+function getRoomForReservation(form) {
+  if (state.selectedRoomDetail?.id === form.room_id) {
+    return state.selectedRoomDetail;
+  }
+
+  return state.rooms.find((room) => room.id === form.room_id) || null;
+}
+
+function getOpeningWindow(form) {
+  const room = getRoomForReservation(form);
+  const datePart = getLocalDatePart(form.start_time);
+
+  if (!room || !datePart) {
+    return null;
+  }
+
+  const [year, month, day] = datePart.split("-").map(Number);
+  const dayOfWeek = new Date(year, month - 1, day).getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+  if (isWeekend) {
+    const weekendHours = room.weekend_hours || "";
+    const normalizedWeekend = weekendHours.toLowerCase();
+
+    if (!weekendHours || normalizedWeekend.includes("chiuso")) {
+      return { closed: true };
+    }
+
+    if (dayOfWeek === 6 && normalizedWeekend.includes("domenica") && !normalizedWeekend.includes("sabato")) {
+      return { closed: true };
+    }
+
+    if (dayOfWeek === 0 && normalizedWeekend.includes("sabato") && !normalizedWeekend.includes("domenica")) {
+      return { closed: true };
+    }
+
+    return getTimeRangeMinutes(weekendHours) || getDefaultOpeningWindow(room);
+  }
+
+  return getTimeRangeMinutes(room.weekday_hours) || getDefaultOpeningWindow(room);
+}
+
+function getDefaultOpeningWindow(room) {
+  const opens = getTimeMinutes(room.opening_time);
+  const closes = getTimeMinutes(room.closing_time);
+
+  if (opens === null || closes === null) {
+    return null;
+  }
+
+  return { opens, closes };
+}
+
+function formatMinutes(minutes) {
+  const hours = String(Math.floor(minutes / 60)).padStart(2, "0");
+  const mins = String(minutes % 60).padStart(2, "0");
+
+  return `${hours}:${mins}`;
+}
+
+function validateOpeningWindow(form, setMessage) {
+  const window = getOpeningWindow(form);
+
+  if (!window) {
+    return true;
+  }
+
+  if (window.closed) {
+    setMessage("L'aula studio risulta chiusa nel giorno selezionato.", "error");
+    return false;
+  }
+
+  const startMinutes = getTimeMinutes(form.start_time);
+  const endMinutes = getTimeMinutes(form.end_time);
+
+  if (startMinutes === null || endMinutes === null) {
+    return true;
+  }
+
+  if (startMinutes < window.opens || endMinutes > window.closes) {
+    setMessage(`L'aula studio è aperta dalle ${formatMinutes(window.opens)} alle ${formatMinutes(window.closes)}.`, "error");
+    return false;
+  }
+
+  return true;
+}
+
 async function makeRequest(method, endpoint, body = null, requireAuth = false) {
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
@@ -182,6 +296,15 @@ export const apiService = {
       return null;
     }
 
+    if (getLocalDatePart(form.start_time) !== getLocalDatePart(form.end_time)) {
+      mutations.setAvailabilityMessage("La prenotazione deve iniziare e finire nello stesso giorno.", "error");
+      return null;
+    }
+
+    if (!validateOpeningWindow(form, mutations.setAvailabilityMessage)) {
+      return null;
+    }
+
     mutations.setAvailabilityLoading(true);
 
     try {
@@ -221,6 +344,15 @@ export const apiService = {
 
     if (new Date(form.start_time) >= new Date(form.end_time)) {
       mutations.setFormMessage("L'orario di fine deve essere dopo quello di inizio", "error");
+      return false;
+    }
+
+    if (getLocalDatePart(form.start_time) !== getLocalDatePart(form.end_time)) {
+      mutations.setFormMessage("La prenotazione deve iniziare e finire nello stesso giorno.", "error");
+      return false;
+    }
+
+    if (!validateOpeningWindow(form, mutations.setFormMessage)) {
       return false;
     }
 

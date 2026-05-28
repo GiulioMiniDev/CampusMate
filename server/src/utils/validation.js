@@ -22,6 +22,10 @@ function validateBookingParameters(params) {
     return "end_time deve essere successivo a start_time.";
   }
 
+  if (getLocalDatePart(params.start_time, startTime) !== getLocalDatePart(params.end_time, endTime)) {
+    return "La prenotazione deve iniziare e finire nello stesso giorno.";
+  }
+
   if (!Number.isInteger(seatsRequested) || seatsRequested <= 0) {
     return "seats_requested deve essere un numero positivo.";
   }
@@ -37,6 +41,17 @@ function validateBookingParameters(params) {
   }
 
   return null;
+}
+
+function getLocalDatePart(value, parsedDate) {
+  const stringValue = value === undefined || value === null ? "" : String(value);
+  const dateMatch = stringValue.match(/^(\d{4}-\d{2}-\d{2})/);
+
+  if (dateMatch) {
+    return dateMatch[1];
+  }
+
+  return parsedDate.toISOString().slice(0, 10);
 }
 
 module.exports = {

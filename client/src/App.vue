@@ -44,12 +44,6 @@
       <template v-else>
         <RouterView @logout="logout" />
 
-        <section v-if="socketStatus === 'errore' || socketStatus === 'chiuso'" class="mb-5">
-          <div class="cm-alert cm-alert-warning">
-            Aggiornamenti realtime non disponibili. La dashboard continua ad aggiornarsi periodicamente.
-          </div>
-        </section>
-
         <DiagnosticsPanel :health="health" :socket-messages="socketMessages" />
       </template>
     </main>

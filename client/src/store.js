@@ -89,11 +89,18 @@ export const getters = {
   },
 
   getActiveReservations() {
-    const now = new Date();
-
     return state.reservations
-      .filter((reservation) => reservation.status === "active" && new Date(reservation.end_time) > now)
-      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+      .filter((reservation) => reservation.status === "active")
+      .sort((a, b) => {
+        const firstStart = parseDateTime(a.start_time);
+        const secondStart = parseDateTime(b.start_time);
+
+        if (!firstStart || !secondStart) {
+          return 0;
+        }
+
+        return firstStart - secondStart;
+      });
   }
 };
 
@@ -275,4 +282,15 @@ function readStoredAuth() {
 
 function persistAuth(session) {
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+}
+
+export function parseDateTime(value) {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = String(value).replace(" ", "T");
+  const parsed = new Date(normalized);
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
