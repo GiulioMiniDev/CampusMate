@@ -417,7 +417,7 @@ async function main() {
   initializeDatabase();
   installDependencies();
 
-  await startProcess("backend CampusMate", serverDir, ["start"], config.serverPort);
+  await startProcess("backend CampusMate", serverDir, ["run", "dev"], config.serverPort);
   await waitForHttp("backend CampusMate", `http://127.0.0.1:${config.serverPort}/api/health`);
 
   await startProcess("frontend CampusMate", clientDir, ["run", "dev", "--", "--host", "127.0.0.1"], config.clientPort);

@@ -79,6 +79,14 @@
             <div v-else class="reservation-qr-loading">QR</div>
           </div>
           <small>Mostralo alla reception</small>
+          <button
+            type="button"
+            class="cm-button cm-button-outline cm-button-sm reservation-cancel-button"
+            :disabled="cancellingReservationId === reservation.id"
+            @click="confirmCancelReservation(reservation)"
+          >
+            {{ cancellingReservationId === reservation.id ? "Cancellazione..." : "Cancella" }}
+          </button>
         </div>
       </article>
     </div>
@@ -94,7 +102,8 @@ export default {
   name: "ReservationsView",
   data() {
     return {
-      qrCodes: {}
+      qrCodes: {},
+      cancellingReservationId: null
     };
   },
   computed: {
@@ -156,6 +165,28 @@ export default {
     },
     formatReservationType(value) {
       return value === "group" ? "Gruppo" : "Individuale";
+    },
+    async confirmCancelReservation(reservation) {
+      const confirmed = window.confirm(
+        `Vuoi cancellare la prenotazione #${reservation.id} per ${reservation.room_name}?`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      this.cancellingReservationId = reservation.id;
+
+      try {
+        await apiService.cancelReservation(reservation.id);
+        const nextQrCodes = { ...this.qrCodes };
+        delete nextQrCodes[reservation.id];
+        this.qrCodes = nextQrCodes;
+      } catch (error) {
+        console.error("Reservation cancellation failed:", error);
+      } finally {
+        this.cancellingReservationId = null;
+      }
     }
   }
 };

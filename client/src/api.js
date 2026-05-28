@@ -157,6 +157,20 @@ export const apiService = {
     }
   },
 
+  async cancelReservation(reservationId) {
+    try {
+      const response = await makeRequest("DELETE", `/api/reservations/${reservationId}`, null, true);
+      await Promise.all([
+        this.loadReservations(),
+        this.loadRooms({ background: true })
+      ]);
+      return response;
+    } catch (error) {
+      mutations.setReservationsMessage(error.message || "Cancellazione non riuscita.");
+      throw error;
+    }
+  },
+
   async checkRoomAvailability(form = state.reservationForm) {
     if (!form.room_id || !form.start_time || !form.end_time || !form.seats_requested) {
       mutations.resetAvailabilityCheck();

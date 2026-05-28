@@ -1,6 +1,7 @@
 const express = require("express");
 const db = require("../config/database");
 const { requireAuth } = require("../middleware/auth");
+const { validateBookingParameters } = require("../utils/validation");
 
 function createReservationRoutes(websocketHub) {
   const router = express.Router();
@@ -109,39 +110,50 @@ function createReservationRoutes(websocketHub) {
         return;
       }
 
-      const tableFilters = {
-        roomId,
-        requestedTableId: requestedTableId || null,
-        startTime,
-        endTime,
-        seatsRequested
-      };
-
-      // Cerco un tavolo con abbastanza posti e senza prenotazioni sovrapposte
+      // Cerco un tavolo con abbastanza posti residui nello slot richiesto.
       const [tables] = await connection.query(`
-        SELECT st.id
+        SELECT st.id, st.seats_count
         FROM study_tables st
         WHERE st.room_id = :roomId
           AND st.status = 'available'
           AND st.seats_count >= :seatsRequested
           AND (:requestedTableId IS NULL OR st.id = :requestedTableId)
-          AND NOT EXISTS (
-            SELECT 1
-            FROM reservations r
-            WHERE r.study_table_id = st.id
-              AND r.status = 'active'
-              AND r.start_time < :endTime
-              AND r.end_time > :startTime
-          )
         ORDER BY
           CASE WHEN st.is_group_table = TRUE THEN 1 ELSE 0 END,
           st.seats_count,
           st.id
-        LIMIT 1
         FOR UPDATE
-      `, tableFilters);
+      `, {
+        roomId,
+        requestedTableId: requestedTableId || null,
+        seatsRequested
+      });
 
-      if (tables.length === 0) {
+      let selectedTable = null;
+
+      for (const table of tables) {
+        const [reservedRows] = await connection.query(`
+          SELECT COALESCE(SUM(seats_requested), 0) AS seats_reserved
+          FROM reservations
+          WHERE study_table_id = :studyTableId
+            AND status = 'active'
+            AND start_time < :endTime
+            AND end_time > :startTime
+        `, {
+          studyTableId: table.id,
+          startTime,
+          endTime
+        });
+
+        const availableSeats = Number(table.seats_count) - Number(reservedRows[0].seats_reserved || 0);
+
+        if (availableSeats >= seatsRequested) {
+          selectedTable = table;
+          break;
+        }
+      }
+
+      if (!selectedTable) {
         await connection.rollback();
         res.status(409).json({
           error: {
@@ -151,7 +163,7 @@ function createReservationRoutes(websocketHub) {
         return;
       }
 
-      const studyTableId = tables[0].id;
+      const studyTableId = selectedTable.id;
 
       // Se ho trovato un tavolo valido, salvo la prenotazione
       const [result] = await connection.query(`
@@ -223,6 +235,102 @@ function createReservationRoutes(websocketHub) {
       });
 
       res.status(201).json(reservation);
+    } catch (error) {
+      await connection.rollback();
+      next(error);
+    } finally {
+      connection.release();
+    }
+  });
+
+  // Cancella logicamente una prenotazione attiva.
+  router.delete("/:id", requireAuth, async (req, res, next) => {
+    const reservationId = Number(req.params.id);
+
+    if (!Number.isInteger(reservationId) || reservationId <= 0) {
+      res.status(400).json({
+        error: {
+          message: "ID prenotazione non valido."
+        }
+      });
+      return;
+    }
+
+    const connection = await db.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const ownershipFilter = req.auth.role === "admin" ? "" : "AND r.user_id = :userId";
+      const [reservations] = await connection.query(`
+        SELECT
+          r.id,
+          r.user_id,
+          r.study_table_id,
+          st.room_id,
+          r.status
+        FROM reservations r
+        INNER JOIN study_tables st ON st.id = r.study_table_id
+        WHERE r.id = :reservationId
+          ${ownershipFilter}
+        FOR UPDATE
+      `, {
+        reservationId,
+        userId: req.auth.userId
+      });
+
+      if (reservations.length === 0) {
+        await connection.rollback();
+        res.status(404).json({
+          error: {
+            message: "Prenotazione non trovata."
+          }
+        });
+        return;
+      }
+
+      const reservation = reservations[0];
+
+      if (reservation.status !== "active") {
+        await connection.rollback();
+        res.status(409).json({
+          error: {
+            message: "La prenotazione non e piu attiva."
+          }
+        });
+        return;
+      }
+
+      await connection.query(`
+        UPDATE reservations
+        SET status = 'cancelled'
+        WHERE id = :reservationId
+      `, { reservationId });
+
+      await connection.commit();
+
+      websocketHub.broadcast({
+        type: "reservation.cancelled",
+        payload: {
+          id: reservation.id,
+          room_id: reservation.room_id,
+          study_table_id: reservation.study_table_id
+        },
+        timestamp: new Date().toISOString()
+      });
+
+      websocketHub.broadcast({
+        type: "room.availability.changed",
+        payload: {
+          room_id: reservation.room_id
+        },
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        id: reservation.id,
+        status: "cancelled"
+      });
     } catch (error) {
       await connection.rollback();
       next(error);

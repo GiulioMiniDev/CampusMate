@@ -5,8 +5,7 @@ const { validateBookingParameters } = require("../utils/validation");
 const router = express.Router();
 
 // Query base usata sia per la lista delle aule sia per il dettaglio.
-// La dashboard considera occupati i tavoli con prenotazioni attive non ancora terminate,
-// cosi una prenotazione futura appena creata produce subito un cambiamento visibile.
+// La dashboard scala i posti prenotati, non l'intera capienza del tavolo.
 const roomSelect = `
   SELECT
     sr.id,
@@ -31,10 +30,9 @@ const roomSelect = `
     COALESCE(SUM(
       CASE
         WHEN st.status = 'available'
-          AND blocking_reservations.study_table_id IS NULL
           AND sr.status = 'open'
           AND b.status = 'open'
-        THEN st.seats_count
+        THEN GREATEST(st.seats_count - COALESCE(active_reservations.seats_reserved, 0), 0)
         ELSE 0
       END
     ), 0) AS available_seats
@@ -42,11 +40,12 @@ const roomSelect = `
   INNER JOIN buildings b ON b.id = sr.building_id
   LEFT JOIN study_tables st ON st.room_id = sr.id
   LEFT JOIN (
-    SELECT DISTINCT study_table_id
+    SELECT study_table_id, SUM(seats_requested) AS seats_reserved
     FROM reservations
     WHERE status = 'active'
       AND end_time > NOW()
-  ) blocking_reservations ON blocking_reservations.study_table_id = st.id
+    GROUP BY study_table_id
+  ) active_reservations ON active_reservations.study_table_id = st.id
 `;
 
 function normalizeRoom(room) {
@@ -127,20 +126,21 @@ router.get("/:id/availability", async (req, res, next) => {
         st.layout_width,
         st.layout_height,
         st.layout_rotation,
+        GREATEST(st.seats_count - COALESCE(conflicting_reservations.seats_reserved, 0), 0) AS available_seats_for_slot,
         CASE
           WHEN st.status = 'available'
-            AND st.seats_count >= :seatsRequested
-            AND conflicting_reservations.study_table_id IS NULL
+            AND GREATEST(st.seats_count - COALESCE(conflicting_reservations.seats_reserved, 0), 0) >= :seatsRequested
           THEN TRUE
           ELSE FALSE
         END AS is_available_for_slot
       FROM study_tables st
       LEFT JOIN (
-        SELECT DISTINCT study_table_id
+        SELECT study_table_id, SUM(seats_requested) AS seats_reserved
         FROM reservations
         WHERE status = 'active'
           AND start_time < :endTime
           AND end_time > :startTime
+        GROUP BY study_table_id
       ) conflicting_reservations ON conflicting_reservations.study_table_id = st.id
       WHERE st.room_id = :roomId
       ORDER BY st.table_code
@@ -156,7 +156,7 @@ router.get("/:id/availability", async (req, res, next) => {
       ? normalizedTables.filter((table) => table.id === requestedTableId)
       : normalizedTables;
     const availableTables = matchingTables.filter((table) => table.is_available_for_slot);
-    const availableSeats = availableTables.reduce((sum, table) => sum + table.seats_count, 0);
+    const availableSeats = availableTables.reduce((sum, table) => sum + table.available_seats_for_slot, 0);
     const available = availableTables.length > 0;
 
     res.json({
@@ -204,7 +204,7 @@ router.get("/:id", async (req, res, next) => {
       return;
     }
 
-    // Controlliamo per ogni tavolo se ha una prenotazione attiva non ancora terminata.
+    // Controlliamo per ogni tavolo quanti posti sono ancora liberi.
     const [tables] = await db.query(`
       SELECT
         st.id,
@@ -218,17 +218,21 @@ router.get("/:id", async (req, res, next) => {
         st.layout_width,
         st.layout_height,
         st.layout_rotation,
+        GREATEST(st.seats_count - COALESCE(active_reservations.seats_reserved, 0), 0) AS available_seats_now,
         CASE
-          WHEN blocking_reservations.study_table_id IS NULL THEN TRUE
+          WHEN st.status = 'available'
+            AND GREATEST(st.seats_count - COALESCE(active_reservations.seats_reserved, 0), 0) > 0
+          THEN TRUE
           ELSE FALSE
         END AS is_available_now
       FROM study_tables st
       LEFT JOIN (
-        SELECT DISTINCT study_table_id
+        SELECT study_table_id, SUM(seats_requested) AS seats_reserved
         FROM reservations
         WHERE status = 'active'
           AND end_time > NOW()
-      ) blocking_reservations ON blocking_reservations.study_table_id = st.id
+        GROUP BY study_table_id
+      ) active_reservations ON active_reservations.study_table_id = st.id
       WHERE st.room_id = :roomId
       ORDER BY st.table_code
     `, { roomId });
@@ -249,6 +253,8 @@ function normalizeTable(table) {
     ...table,
     id: Number(table.id),
     seats_count: Number(table.seats_count),
+    available_seats_now: table.available_seats_now === undefined ? undefined : Number(table.available_seats_now),
+    available_seats_for_slot: table.available_seats_for_slot === undefined ? undefined : Number(table.available_seats_for_slot),
     has_power_outlet: Boolean(table.has_power_outlet),
     is_group_table: Boolean(table.is_group_table),
     layout_x: Number(table.layout_x),

@@ -1502,6 +1502,11 @@ body {
   font-weight: 700;
 }
 
+.reservation-cancel-button {
+  width: 100%;
+  justify-content: center;
+}
+
 .reservations-empty,
 .account-empty {
   padding: 2rem;

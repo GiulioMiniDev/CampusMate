@@ -29,7 +29,7 @@
         @click="$emit('select-table', table.id)"
       >
         <span class="table-code">{{ table.table_code }}</span>
-        <span class="table-seats">{{ table.seats_count }} posti</span>
+        <span class="table-seats">{{ getTableSeatsLabel(table) }}</span>
       </button>
     </div>
   </section>
@@ -60,6 +60,17 @@ export default {
       }
 
       return table.status === "available" && table.is_available_now !== false;
+    },
+    getTableSeatsLabel(table) {
+      if (this.hasSlotAvailability && table.available_seats_for_slot !== undefined) {
+        return `${table.available_seats_for_slot}/${table.seats_count} liberi`;
+      }
+
+      if (table.available_seats_now !== undefined) {
+        return `${table.available_seats_now}/${table.seats_count} liberi`;
+      }
+
+      return `${table.seats_count} posti`;
     },
     getTableStyle(table) {
       return {

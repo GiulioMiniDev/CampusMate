@@ -25,6 +25,7 @@ export const websocketService = {
 
         const refreshEvents = [
           "reservation.created",
+          "reservation.cancelled",
           "reservation_updated",
           "room.availability.changed",
           "room_updated"
