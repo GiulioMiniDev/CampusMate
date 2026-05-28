@@ -1,6 +1,7 @@
 const express = require("express");
 const db = require("../config/database");
 const { validateBookingParameters } = require("../utils/validation");
+const { requireAuth } = require("../middleware/auth"); // Assuming this exists
 
 const router = express.Router();
 
@@ -59,7 +60,7 @@ function normalizeRoom(room) {
   };
 }
 
-// Restituisce tutte le aule studio con edificio, stato e disponibilita
+// Restituisce tutte le aule studio con edificio, stato e disponibilità
 router.get("/", async (req, res, next) => {
   try {
     const [rooms] = await db.query(`
@@ -246,7 +247,119 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
+router.post("/", requireAuth, async (req, res, next) => {
+  if (req.auth.role !== "admin") {
+    return res.status(403).json({ error: { message: "Non autorizzato" } });
+  }
 
+  const { building_id, name, floor_label, room_code, description } = req.body;
+  
+  try {
+    const [result] = await db.query(`
+      INSERT INTO study_rooms (building_id, name, floor_label, room_code, description)
+      VALUES (:building_id, :name, :floor_label, :room_code, :description)
+    `, { building_id, name, floor_label, room_code, description });
+
+    res.status(201).json({ id: result.insertId, message: "Aula creata con successo." });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/:id/tables", requireAuth, async (req, res, next) => {
+  if (req.auth.role !== "admin") {
+    return res.status(403).json({ error: { message: "Non autorizzato" } });
+  }
+
+  const roomId = Number(req.params.id);
+  const { table_code, seats_count, has_power_outlet, is_group_table, layout_x, layout_y, layout_width, layout_height, layout_rotation } = req.body;
+  
+  try {
+    const [result] = await db.query(`
+      INSERT INTO study_tables (room_id, table_code, seats_count, has_power_outlet, is_group_table, layout_x, layout_y, layout_width, layout_height, layout_rotation)
+      VALUES (:roomId, :table_code, :seats_count, :has_power_outlet, :is_group_table, :layout_x, :layout_y, :layout_width, :layout_height, :layout_rotation)
+    `, { roomId, table_code, seats_count, has_power_outlet, is_group_table, layout_x, layout_y, layout_width, layout_height, layout_rotation });
+
+    res.status(201).json({ id: result.insertId, message: "Tavolo creato con successo." });
+  } catch (error) {
+    next(error);
+  }
+});
+
+async function updateTable(req, res, next) {
+  if (req.auth.role !== "admin") {
+    return res.status(403).json({ error: { message: "Non autorizzato" } });
+  }
+
+  const tableId = req.params.tableId;
+  const { table_code, seats_count, has_power_outlet, is_group_table, layout_x, layout_y, layout_width, layout_height, layout_rotation, status } = req.body;
+
+  try {
+    await db.query(`
+      UPDATE study_tables 
+      SET table_code = :table_code, seats_count = :seats_count, has_power_outlet = :has_power_outlet, 
+          is_group_table = :is_group_table, layout_x = :layout_x, layout_y = :layout_y, 
+          layout_width = :layout_width, layout_height = :layout_height, layout_rotation = :layout_rotation,
+          status = :status
+      WHERE id = :id
+    `, {
+      id: tableId,
+      table_code,
+      seats_count: Number(seats_count),
+      has_power_outlet: Boolean(has_power_outlet) ? 1 : 0,
+      is_group_table: Boolean(is_group_table) ? 1 : 0,
+      layout_x: Number(layout_x),
+      layout_y: Number(layout_y),
+      layout_width: Number(layout_width),
+      layout_height: Number(layout_height),
+      layout_rotation: Number(layout_rotation),
+      status: status || "available"
+    });
+
+    res.json({ message: "Tavolo aggiornato con successo." });
+  } catch (error) {
+    next(error);
+  }
+}
+
+router.put("/tables/:tableId", requireAuth, updateTable);
+router.put("/:id/tables/:tableId", requireAuth, updateTable);
+router.post("/tables/:tableId", requireAuth, updateTable);
+router.post("/:id/tables/:tableId", requireAuth, updateTable);
+
+async function updateRoom(req, res, next) {
+  if (req.auth.role !== "admin") {
+    return res.status(403).json({ error: { message: "Non autorizzato" } });
+  }
+
+  const roomId = req.params.id;
+  const { name, room_code, floor_label, description, status } = req.body;
+
+  try {
+    await db.query(`
+      UPDATE study_rooms 
+      SET name = :name, room_code = :room_code, floor_label = :floor_label, description = :description,
+          status = :status
+      WHERE id = :id
+    `, {
+      id: roomId,
+      name,
+      room_code,
+      floor_label,
+      description: description || null,
+      status: status || "open"
+    });
+
+    res.json({ message: "Aula aggiornata con successo." });
+  } catch (error) {
+    next(error);
+  }
+}
+
+router.put("/:id", requireAuth, updateRoom);
+router.post("/:id", requireAuth, updateRoom);
+
+module.exports = router;
 
 function normalizeTable(table) {
   return {
@@ -282,5 +395,3 @@ function normalizeServices(services) {
     return [];
   }
 }
-
-module.exports = router;

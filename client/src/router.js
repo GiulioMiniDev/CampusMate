@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import AccountView from "./views/AccountView.vue";
 import ReservationsView from "./views/ReservationsView.vue";
 import RoomsView from "./views/RoomsView.vue";
+import AdminDashboard from "./views/AdminDashboard.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -24,6 +25,11 @@ const router = createRouter({
       path: "/account",
       name: "account",
       component: AccountView
+    },
+    {
+      path: "/admin",
+      name: "admin",
+      component: AdminDashboard
     },
     {
       path: "/:pathMatch(.*)*",

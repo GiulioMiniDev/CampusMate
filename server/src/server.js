@@ -5,6 +5,7 @@ const env = require("./config/env");
 const authRoutes = require("./routes/authRoutes");
 const healthRoutes = require("./routes/healthRoutes");
 const roomRoutes = require("./routes/roomRoutes");
+const buildingRoutes = require("./routes/buildingRoutes");
 const createReservationRoutes = require("./routes/reservationRoutes");
 const createWebSocketHub = require("./websocket/hub");
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/rooms", roomRoutes);
+app.use("/api/buildings", buildingRoutes);
 app.use("/api/reservations", createReservationRoutes(websocketHub));
 
 app.use((req, res) => {

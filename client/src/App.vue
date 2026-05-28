@@ -16,6 +16,10 @@
             <UserRound class="app-nav-icon" aria-hidden="true" />
             <span>Account</span>
           </RouterLink>
+          <RouterLink v-if="currentUser?.role === 'admin'" class="app-nav-link" to="/admin">
+            <UserRound class="app-nav-icon" aria-hidden="true" />
+            <span>Admin</span>
+          </RouterLink>
         </div>
         <div v-if="isAuthenticated" class="app-userbar d-none d-md-flex">
           <span class="small text-body-secondary">{{ currentUserName }}</span>
@@ -101,6 +105,7 @@ export default {
     loginForm() { return state.loginForm; },
     registerForm() { return state.registerForm; },
     currentUserName() { return getters.getCurrentUserName(); },
+    currentUser() { return state.currentUser; },
     isAuthenticated() { return getters.isAuthenticated(); },
     health() { return state.health; },
     socketMessages() { return state.socketMessages; },
