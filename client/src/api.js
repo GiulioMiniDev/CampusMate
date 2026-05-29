@@ -239,6 +239,27 @@ export const apiService = {
     }
   },
 
+  async updateProfile() {
+    if (!this.validateUpdateProfileForm()) return;
+
+    mutations.setProfileSubmitting(true);
+    try {
+      const response = await makeRequest("PUT", "/api/auth/me", state.updateProfileForm, true);
+      mutations.setCurrentUser(response.user);
+      mutations.setProfileMessage("Profilo aggiornato con successo.", "success");
+      
+      // Clear passwords
+      state.updateProfileForm.password = "";
+      state.updateProfileForm.password_confirm = "";
+      return response.user;
+    } catch (error) {
+      mutations.setProfileMessage(error.message, "error");
+      throw error;
+    } finally {
+      mutations.setProfileSubmitting(false);
+    }
+  },
+
   async loadHealth() {
     try {
       const health = await makeRequest("GET", "/api/health");
@@ -504,9 +525,46 @@ export const apiService = {
 
     if (form.year_of_study) {
       const yearOfStudy = Number(form.year_of_study);
-
       if (!Number.isInteger(yearOfStudy) || yearOfStudy < 1 || yearOfStudy > 6) {
         mutations.setAuthMessage("L'anno di studio deve essere compreso tra 1 e 6.", "error");
+        return false;
+      }
+    }
+
+    return true;
+  },
+
+  validateUpdateProfileForm() {
+    const form = state.updateProfileForm;
+    if (!form.first_name || form.first_name.trim().length < 2) {
+      mutations.setProfileMessage("Il nome deve contenere almeno 2 caratteri.", "error");
+      return false;
+    }
+
+    if (!form.last_name || form.last_name.trim().length < 2) {
+      mutations.setProfileMessage("Il cognome deve contenere almeno 2 caratteri.", "error");
+      return false;
+    }
+
+    if (!form.email) {
+      mutations.setProfileMessage("Inserisci la tua email.", "error");
+      return false;
+    }
+
+    if (form.password && form.password.length < 8) {
+      mutations.setProfileMessage("La password deve contenere almeno 8 caratteri.", "error");
+      return false;
+    }
+
+    if (form.password !== form.password_confirm) {
+      mutations.setProfileMessage("Le password non coincidono.", "error");
+      return false;
+    }
+
+    if (form.year_of_study) {
+      const yearOfStudy = Number(form.year_of_study);
+      if (!Number.isInteger(yearOfStudy) || yearOfStudy < 1 || yearOfStudy > 6) {
+        mutations.setProfileMessage("L'anno di studio deve essere compreso tra 1 e 6.", "error");
         return false;
       }
     }

@@ -27,6 +27,20 @@ export const state = reactive({
     year_of_study: "",
     phone: ""
   },
+  updateProfileForm: {
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+    password_confirm: "",
+    student_number: "",
+    degree_course: "",
+    year_of_study: "",
+    phone: ""
+  },
+  profileMessage: null,
+  profileMessageType: "success",
+  profileSubmitting: false,
   backendStatus: "offline",
   socketStatus: "disconnesso",
   health: null,
@@ -143,6 +157,15 @@ export const mutations = {
   setAuthMessage(message, type = "success") {
     state.authMessage = message;
     state.authMessageType = type;
+  },
+
+  setProfileMessage(message, type = "success") {
+    state.profileMessage = message;
+    state.profileMessageType = type;
+  },
+
+  setProfileSubmitting(submitting) {
+    state.profileSubmitting = submitting;
   },
 
   setAuthSession(session) {

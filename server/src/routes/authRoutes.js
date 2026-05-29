@@ -161,6 +161,74 @@ router.get("/me", requireAuth, async (req, res, next) => {
   }
 });
 
+router.put("/me", requireAuth, async (req, res, next) => {
+  const validationError = validateUpdateInput(req.body);
+
+  if (validationError) {
+    res.status(400).json({
+      error: {
+        message: validationError
+      }
+    });
+    return;
+  }
+
+  const userInput = normalizeUpdateInput(req.body);
+
+  try {
+    let updateSql = `
+      UPDATE users SET 
+        first_name = :firstName,
+        last_name = :lastName,
+        email = :email,
+        student_number = :studentNumber,
+        degree_course = :degreeCourse,
+        year_of_study = :yearOfStudy,
+        phone = :phone
+    `;
+    let params = {
+      firstName: userInput.firstName,
+      lastName: userInput.lastName,
+      email: userInput.email,
+      studentNumber: userInput.studentNumber,
+      degreeCourse: userInput.degreeCourse,
+      yearOfStudy: userInput.yearOfStudy,
+      phone: userInput.phone,
+      userId: req.auth.userId
+    };
+
+    if (userInput.password) {
+      updateSql += `, password_hash = :passwordHash`;
+      params.passwordHash = hashPassword(userInput.password);
+    }
+    
+    updateSql += ` WHERE id = :userId`;
+
+    await db.query(updateSql, params);
+
+    const [users] = await db.query(`
+      SELECT id, first_name, last_name, email, role, student_number, degree_course, year_of_study, phone, status
+      FROM users
+      WHERE id = :userId
+      LIMIT 1
+    `, { userId: req.auth.userId });
+
+    res.json({
+      user: await attachReceptionAssignments(toPublicUser(users[0]))
+    });
+  } catch (error) {
+    if (error.code === "ER_DUP_ENTRY") {
+      res.status(409).json({
+        error: {
+          message: "Email o matricola gia registrate."
+        }
+      });
+      return;
+    }
+    next(error);
+  }
+});
+
 function validateLoginInput(body) {
   if (!body.email || !isValidEmail(body.email)) {
     return "Inserisci un indirizzo email valido.";
@@ -201,12 +269,47 @@ function validateRegistrationInput(body) {
   return null;
 }
 
+function validateUpdateInput(body) {
+  if (!body.first_name || String(body.first_name).trim().length < 2) {
+    return "Il nome deve contenere almeno 2 caratteri.";
+  }
+  if (!body.last_name || String(body.last_name).trim().length < 2) {
+    return "Il cognome deve contenere: almeno 2 caratteri.";
+  }
+  if (!body.email || !isValidEmail(body.email)) {
+    return "Inserisci un indirizzo email valido.";
+  }
+  if (body.password && String(body.password).length < 8) {
+    return "La password deve contenere almeno 8 caratteri.";
+  }
+  if (body.year_of_study !== undefined && body.year_of_study !== null && body.year_of_study !== "") {
+    const yearOfStudy = Number(body.year_of_study);
+    if (!Number.isInteger(yearOfStudy) || yearOfStudy < 1 || yearOfStudy > 6) {
+      return "L'anno di studio deve essere compreso tra 1 e 6.";
+    }
+  }
+  return null;
+}
+
 function normalizeRegistrationInput(body) {
   return {
     firstName: String(body.first_name).trim(),
     lastName: String(body.last_name).trim(),
     email: String(body.email).trim().toLowerCase(),
     password: String(body.password),
+    studentNumber: normalizeOptionalString(body.student_number),
+    degreeCourse: normalizeOptionalString(body.degree_course),
+    yearOfStudy: body.year_of_study ? Number(body.year_of_study) : null,
+    phone: normalizeOptionalString(body.phone)
+  };
+}
+
+function normalizeUpdateInput(body) {
+  return {
+    firstName: String(body.first_name).trim(),
+    lastName: String(body.last_name).trim(),
+    email: String(body.email).trim().toLowerCase(),
+    password: body.password ? String(body.password) : null,
     studentNumber: normalizeOptionalString(body.student_number),
     degreeCourse: normalizeOptionalString(body.degree_course),
     yearOfStudy: body.year_of_study ? Number(body.year_of_study) : null,
