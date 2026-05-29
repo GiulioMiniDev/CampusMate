@@ -3,7 +3,7 @@
     <div class="auth-panel cm-panel">
       <div class="auth-copy">
         <p class="text-uppercase small fw-semibold tracking mb-2">CampusMate</p>
-        <h1 class="h2 fw-bold mb-3">Accedi alla dashboard</h1>
+        <h1 class="h2 fw-bold mb-3">Accedi al sito</h1>
         <p class="text-body-secondary mb-0">
           Prenota le aule studio con il tuo profilo studente.
         </p>
@@ -45,13 +45,25 @@
 
           <div class="mb-4">
             <label class="form-label cm-label">Password</label>
-            <input
-              v-model="loginForm.password"
-              type="password"
-              class="form-control cm-field"
-              autocomplete="current-password"
-              required
-            >
+            <div class="password-field">
+              <input
+                v-model="loginForm.password"
+                :type="showLoginPassword ? 'text' : 'password'"
+                class="form-control cm-field password-field-input"
+                autocomplete="current-password"
+                required
+              >
+              <button
+                type="button"
+                class="password-toggle"
+                :aria-label="showLoginPassword ? 'Nascondi password' : 'Mostra password'"
+                :title="showLoginPassword ? 'Nascondi password' : 'Mostra password'"
+                @click="showLoginPassword = !showLoginPassword"
+              >
+                <EyeOff v-if="showLoginPassword" class="password-toggle-icon" aria-hidden="true" />
+                <Eye v-else class="password-toggle-icon" aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
           <button type="submit" class="cm-button cm-button-primary cm-button-block" :disabled="isSubmitting">
@@ -78,12 +90,50 @@
 
             <div class="col-md-6">
               <label class="form-label cm-label">Password</label>
-              <input v-model="registerForm.password" type="password" class="form-control cm-field" autocomplete="new-password" minlength="8" required>
+              <div class="password-field">
+                <input
+                  v-model="registerForm.password"
+                  :type="showRegisterPassword ? 'text' : 'password'"
+                  class="form-control cm-field password-field-input"
+                  autocomplete="new-password"
+                  minlength="8"
+                  required
+                >
+                <button
+                  type="button"
+                  class="password-toggle"
+                  :aria-label="showRegisterPassword ? 'Nascondi password' : 'Mostra password'"
+                  :title="showRegisterPassword ? 'Nascondi password' : 'Mostra password'"
+                  @click="showRegisterPassword = !showRegisterPassword"
+                >
+                  <EyeOff v-if="showRegisterPassword" class="password-toggle-icon" aria-hidden="true" />
+                  <Eye v-else class="password-toggle-icon" aria-hidden="true" />
+                </button>
+              </div>
             </div>
 
             <div class="col-md-6">
               <label class="form-label cm-label">Conferma password</label>
-              <input v-model="registerForm.password_confirm" type="password" class="form-control cm-field" autocomplete="new-password" minlength="8" required>
+              <div class="password-field">
+                <input
+                  v-model="registerForm.password_confirm"
+                  :type="showRegisterPasswordConfirm ? 'text' : 'password'"
+                  class="form-control cm-field password-field-input"
+                  autocomplete="new-password"
+                  minlength="8"
+                  required
+                >
+                <button
+                  type="button"
+                  class="password-toggle"
+                  :aria-label="showRegisterPasswordConfirm ? 'Nascondi password' : 'Mostra password'"
+                  :title="showRegisterPasswordConfirm ? 'Nascondi password' : 'Mostra password'"
+                  @click="showRegisterPasswordConfirm = !showRegisterPasswordConfirm"
+                >
+                  <EyeOff v-if="showRegisterPasswordConfirm" class="password-toggle-icon" aria-hidden="true" />
+                  <Eye v-else class="password-toggle-icon" aria-hidden="true" />
+                </button>
+              </div>
             </div>
 
             <div class="col-md-6">
@@ -117,8 +167,14 @@
 </template>
 
 <script>
+import { Eye, EyeOff } from "@lucide/vue";
+
 export default {
   name: "AuthPanel",
+  components: {
+    Eye,
+    EyeOff
+  },
   props: {
     mode: {
       type: String,
@@ -145,6 +201,13 @@ export default {
       required: true
     }
   },
-  emits: ["switch-mode", "login", "register"]
+  emits: ["switch-mode", "login", "register"],
+  data() {
+    return {
+      showLoginPassword: false,
+      showRegisterPassword: false,
+      showRegisterPasswordConfirm: false
+    };
+  }
 };
 </script>
