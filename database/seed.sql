@@ -46,7 +46,6 @@ INSERT INTO buildings (
 ('Sede di Via dei Sardi - San Lorenzo', 'RM035', 'Via dei Sardi 70, 00185 Roma', 'San Lorenzo', 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Sapienzia_Roma.jpg', 41.897312, 12.519894, '09:00 - 19:00', 'Chiuso', JSON_ARRAY('Wi-Fi', 'Prese elettriche', 'Aria condizionata'), '09:00:00', '19:00:00', 'open');
 
 INSERT INTO receptionist_assignments (user_id, building_id) VALUES
-((SELECT id FROM users WHERE email = 'reception.economia@campusmate.local'), (SELECT id FROM buildings WHERE code = 'CU026')),
 ((SELECT id FROM users WHERE email = 'reception.giurisprudenza@campusmate.local'), (SELECT id FROM buildings WHERE code = 'RM007')),
 ((SELECT id FROM users WHERE email = 'reception.economia@campusmate.local'), (SELECT id FROM buildings WHERE code = 'RM019')),
 ((SELECT id FROM users WHERE email = 'reception.giurisprudenza@campusmate.local'), (SELECT id FROM buildings WHERE code = 'CU002'));

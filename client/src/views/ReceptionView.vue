@@ -82,6 +82,44 @@
 
     <div class="cm-panel mt-4 p-3 p-md-4">
       <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Planimetrie check-in</h2>
+        <span class="cm-badge cm-badge-info">{{ present.length }}</span>
+      </div>
+
+      <div v-if="floorplansLoading" class="cm-alert cm-alert-info">
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+        Caricamento planimetrie...
+      </div>
+
+      <div v-else-if="!floorplanRooms.length" class="cm-alert cm-alert-muted">
+        Nessuna planimetria disponibile per gli edifici assegnati.
+      </div>
+
+      <div v-else class="reception-floorplans">
+        <section v-for="building in floorplanBuildings" :key="building.code" class="reception-building-floorplans">
+          <div class="reception-building-title">
+            <h3>{{ building.name }}</h3>
+            <small>{{ building.code }}</small>
+          </div>
+
+          <div class="reception-room-floorplans">
+            <RoomFloorPlan
+              v-for="room in building.rooms"
+              :key="room.id"
+              :tables="room.tables || []"
+              :has-slot-availability="false"
+              :readonly="true"
+              :occupancy-by-table="getRoomOccupancy(room)"
+              :title="room.name"
+              :subtitle="`${getRoomFloorLabel(room)} - ${getRoomPresentCount(room)} presenti`"
+            />
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="cm-panel mt-4 p-3 p-md-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h5 mb-0">Presenti in aula</h2>
         <span class="cm-badge cm-badge-success">{{ present.length }}</span>
       </div>
@@ -113,19 +151,25 @@
 </template>
 
 <script>
+import RoomFloorPlan from "../components/RoomFloorPlan.vue";
 import { apiService } from "../api.js";
 import { parseDateTime } from "../store.js";
 
 export default {
   name: "ReceptionView",
+  components: {
+    RoomFloorPlan
+  },
   data() {
     return {
       buildings: [],
       present: [],
       expected: [],
       expectedToday: [],
+      floorplanRooms: [],
       reservationMode: "now",
       loading: false,
+      floorplansLoading: false,
       scannerLoading: false,
       cameraActive: false,
       checkInLoading: false,
@@ -146,6 +190,43 @@ export default {
     },
     visibleExpected() {
       return this.reservationMode === "day" ? this.expectedToday : this.expected;
+    },
+    presentByTable() {
+      return this.present.reduce((groups, reservation) => {
+        if (!reservation.study_table_id) {
+          return groups;
+        }
+
+        const tableId = String(reservation.study_table_id);
+        groups[tableId] = groups[tableId] || [];
+        groups[tableId].push(reservation);
+        return groups;
+      }, {});
+    },
+    floorplanBuildings() {
+      const groups = new Map();
+
+      for (const room of this.floorplanRooms) {
+        const code = room.building_code || String(room.building_id);
+
+        if (!groups.has(code)) {
+          groups.set(code, {
+            code,
+            name: room.building || room.building_name || "Edificio",
+            rooms: []
+          });
+        }
+
+        groups.get(code).rooms.push(room);
+      }
+
+      return Array.from(groups.values()).map((building) => ({
+        ...building,
+        rooms: building.rooms.slice().sort((a, b) => {
+          const floorOrder = String(a.floor || "").localeCompare(String(b.floor || ""));
+          return floorOrder || String(a.name || "").localeCompare(String(b.name || ""));
+        })
+      }));
     },
     reservationListTitle() {
       return this.reservationMode === "day" ? "Prenotazioni di oggi" : "Attesi adesso";
@@ -173,6 +254,10 @@ export default {
         this.present = overview.present || [];
         this.expected = overview.expected || [];
         this.expectedToday = overview.today || [];
+
+        if (!this.floorplanRooms.length) {
+          await this.loadReceptionFloorplans();
+        }
       } catch (error) {
         this.setMessage(error.message || "Reception non disponibile.", "error");
       } finally {
@@ -181,6 +266,41 @@ export default {
     },
     toggleReservationMode() {
       this.reservationMode = this.reservationMode === "now" ? "day" : "now";
+    },
+    async loadReceptionFloorplans() {
+      this.floorplansLoading = true;
+
+      try {
+        const rooms = await apiService.loadRooms({ background: true, availabilitySlot: null });
+        const roomDetails = await Promise.all(
+          rooms.map((room) => apiService.loadRoomDetail(room.id).catch(() => null))
+        );
+
+        this.floorplanRooms = roomDetails.filter(Boolean);
+      } catch (error) {
+        this.setMessage(error.message || "Planimetrie reception non disponibili.", "error");
+      } finally {
+        this.floorplansLoading = false;
+      }
+    },
+    getRoomOccupancy(room) {
+      return (room.tables || []).reduce((occupancy, table) => {
+        const occupants = this.presentByTable[String(table.id)];
+
+        if (occupants?.length) {
+          occupancy[table.id] = occupants;
+        }
+
+        return occupancy;
+      }, {});
+    },
+    getRoomPresentCount(room) {
+      return (room.tables || []).reduce((total, table) => {
+        return total + (this.presentByTable[String(table.id)]?.length || 0);
+      }, 0);
+    },
+    getRoomFloorLabel(room) {
+      return room.floor ? `Piano ${room.floor}` : "Piano non indicato";
     },
     async startScanner() {
       this.scannerLoading = true;
@@ -362,6 +482,41 @@ export default {
 
 .reception-list.compact {
   gap: 0.5rem;
+}
+
+.reception-floorplans {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.reception-building-floorplans {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.reception-building-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--cm-border);
+  padding-bottom: 0.5rem;
+}
+
+.reception-building-title h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.reception-building-title small {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.reception-room-floorplans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: 1rem;
 }
 
 .reception-row,

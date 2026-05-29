@@ -301,6 +301,11 @@ body {
   color: #166534;
 }
 
+.cm-badge-info {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
 .cm-badge-warning {
   background: #fef3c7;
   color: #92400e;
@@ -1291,6 +1296,10 @@ body {
   background: #cbd5e1;
 }
 
+.legend-present {
+  background: #2563eb;
+}
+
 .floorplan-canvas {
   position: relative;
   aspect-ratio: 16 / 9;
@@ -1355,10 +1364,25 @@ body {
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
 }
 
+.floorplan-table.is-free:disabled {
+  cursor: default;
+}
+
+.floorplan-table.is-free:disabled:hover {
+  box-shadow: none;
+}
+
 .floorplan-table.is-busy {
   background: #e2e8f0;
   color: #64748b;
   cursor: not-allowed;
+}
+
+.floorplan-table.is-present {
+  background: #dbeafe;
+  border-color: #2563eb;
+  color: #1e3a8a;
+  cursor: default;
 }
 
 .floorplan-table.is-selected {

@@ -397,6 +397,13 @@ function ensureReceptionSchema() {
     INSERT IGNORE INTO receptionist_assignments (user_id, building_id) VALUES
     ((SELECT id FROM users WHERE email = 'reception.economia@campusmate.local'), (SELECT id FROM buildings WHERE code = 'RM019')),
     ((SELECT id FROM users WHERE email = 'reception.giurisprudenza@campusmate.local'), (SELECT id FROM buildings WHERE code = 'CU002'));
+
+    DELETE ra
+    FROM receptionist_assignments ra
+    INNER JOIN users u ON u.id = ra.user_id
+    INNER JOIN buildings b ON b.id = ra.building_id
+    WHERE u.email = 'reception.economia@campusmate.local'
+      AND b.code = 'CU026';
   `);
 
   ok("Schema e utenti reception verificati");
