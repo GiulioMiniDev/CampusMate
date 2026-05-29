@@ -55,15 +55,21 @@
             <span class="reception-stat-label">presenti</span>
           </div>
           <div>
-            <span class="reception-stat-value">{{ expected.length }}</span>
-            <span class="reception-stat-label">attesi ora</span>
+            <span class="reception-stat-value">{{ expectedToday.length }}</span>
+            <span class="reception-stat-label">prenotazioni oggi</span>
           </div>
         </div>
 
-        <h2 class="h5 mb-3">Attesi adesso</h2>
-        <div v-if="!expected.length" class="cm-alert cm-alert-muted">Nessun ingresso atteso in questo momento.</div>
+        <div class="reception-list-header mb-3">
+          <h2 class="h5 mb-0">{{ reservationListTitle }}</h2>
+          <button type="button" class="cm-button cm-button-outline cm-button-sm" @click="toggleReservationMode">
+            {{ reservationMode === "now" ? "Vedi giornata" : "Vedi adesso" }}
+          </button>
+        </div>
+
+        <div v-if="!visibleExpected.length" class="cm-alert cm-alert-muted">{{ emptyReservationMessage }}</div>
         <div v-else class="reception-list compact">
-          <article v-for="reservation in expected" :key="reservation.id" class="reception-row">
+          <article v-for="reservation in visibleExpected" :key="reservation.id" class="reception-row">
             <div>
               <strong>{{ reservation.user_name }}</strong>
               <span>{{ reservation.room_name }} - Tavolo {{ reservation.table_code }}</span>
@@ -117,6 +123,8 @@ export default {
       buildings: [],
       present: [],
       expected: [],
+      expectedToday: [],
+      reservationMode: "now",
       loading: false,
       scannerLoading: false,
       cameraActive: false,
@@ -135,6 +143,17 @@ export default {
       }
 
       return this.buildings.map((building) => building.code).join(", ");
+    },
+    visibleExpected() {
+      return this.reservationMode === "day" ? this.expectedToday : this.expected;
+    },
+    reservationListTitle() {
+      return this.reservationMode === "day" ? "Prenotazioni di oggi" : "Attesi adesso";
+    },
+    emptyReservationMessage() {
+      return this.reservationMode === "day"
+        ? "Nessuna prenotazione prevista oggi."
+        : "Nessun ingresso atteso in questo momento.";
     }
   },
   mounted() {
@@ -153,11 +172,15 @@ export default {
         this.buildings = overview.buildings || [];
         this.present = overview.present || [];
         this.expected = overview.expected || [];
+        this.expectedToday = overview.today || [];
       } catch (error) {
         this.setMessage(error.message || "Reception non disponibile.", "error");
       } finally {
         this.loading = false;
       }
+    },
+    toggleReservationMode() {
+      this.reservationMode = this.reservationMode === "now" ? "day" : "now";
     },
     async startScanner() {
       this.scannerLoading = true;
@@ -330,6 +353,13 @@ export default {
   gap: 0.75rem;
 }
 
+.reception-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .reception-list.compact {
   gap: 0.5rem;
 }
@@ -391,6 +421,11 @@ export default {
 }
 
 @media (max-width: 575.98px) {
+  .reception-list-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .reception-card,
   .reception-row {
     align-items: stretch;

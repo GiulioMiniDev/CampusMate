@@ -44,10 +44,20 @@ function createReceptionRoutes(websocketHub) {
         ORDER BY r.start_time, b.name, sr.name, st.table_code
       `, scope.params);
 
+      const [today] = await db.query(`
+        ${getReceptionReservationSelect()}
+        WHERE r.status = 'active'
+          AND r.start_time >= UTC_DATE()
+          AND r.start_time < UTC_DATE() + INTERVAL 1 DAY
+          AND ${scope.whereClause("b.id")}
+        ORDER BY r.start_time, b.name, sr.name, st.table_code
+      `, scope.params);
+
       res.json({
         buildings,
         present: present.map(normalizeReceptionReservation),
-        expected: expected.map(normalizeReceptionReservation)
+        expected: expected.map(normalizeReceptionReservation),
+        today: today.map(normalizeReceptionReservation)
       });
     } catch (error) {
       next(error);
@@ -301,14 +311,13 @@ function validateCheckIn(reservation) {
   const now = Date.now();
   const start = parseUtcDateTime(reservation.start_time);
   const end = parseUtcDateTime(reservation.end_time);
-  const earlyToleranceMs = 15 * 60 * 1000;
 
   if (Number.isNaN(start) || Number.isNaN(end)) {
     return "Orari della prenotazione non validi.";
   }
 
-  if (now < start - earlyToleranceMs) {
-    return "La prenotazione non e ancora nella finestra di check-in.";
+  if (now < start) {
+    return "La prenotazione non e ancora iniziata.";
   }
 
   if (now > end) {
