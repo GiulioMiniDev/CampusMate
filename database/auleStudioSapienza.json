@@ -1,125 +1,318 @@
 {
-  "universita": "Sapienza Università di Roma - Sedi Estese",
+  "universita": "Sapienza Università di Roma",
   "aule_studio": [
     {
-      "id": "sap_economia_castro",
-      "nome": "Biblioteca di Economia (Castro Laurenziano)",
-      "edificio_sigla": "RM019",
-      "edificio_nome": "Facoltà di Economia - Palazzo del Castro",
-      "indirizzo": "Via del Castro Laurenziano 9, 00161 Roma",
-      "immagine_copertina": "https://upload.wikimedia.org/wikipedia/commons/f/fd/Facolt%C3%A0_di_Economia_Universit%C3%A0_Sapienza_Roma.jpg",
+      "id": "sap_policlinico_h24",
+      "nome": "Sala Lettura Policlinico (H24)",
+      "edificio_sigla": "CU026",
+      "edificio_nome": "Clinica Ortopedica e Traumatologica",
+      "indirizzo": "Viale del Policlinico 155 / Viale Regina Elena 324, 00161 Roma",
+      "immagine_copertina": "https://www.uniroma1.it/sites/default/files/styles/1150_300/public/900x300-_blioteche_h24_4.jpg",
       "posizione": {
-        "latitudine": 41.903494,
-        "longitudine": 12.516568
+        "latitudine": 41.907952,
+        "longitudine": 12.513511
       },
       "orari": {
-        "feriali": "08:30 - 20:00",
-        "weekend": "Chiuso"
+        "feriali": "H24",
+        "weekend": "H24"
       },
-      "servizi": ["Wi-Fi", "Prese elettriche", "Aria condizionata", "Computer Lab"],
-      "totale_posti": 210,
+      "servizi": ["Wi-Fi", "Prese elettriche", "Aria condizionata", "Accesso disabili"],
+      "totale_posti": 60,
       "composizione_aule": [
         {
-          "aula_id": "sala_lettura_centrale",
-          "nome_aula": "Sala Lettura Centrale Gini",
+          "aula_id": "policlinico_main",
+          "nome_aula": "Sala Lettura Principale",
           "piano": "Terra",
-          "posti": 150
-        },
-        {
-          "aula_id": "sala_consultazione",
-          "nome_aula": "Sala Consultazione e Periodici",
-          "piano": "1",
-          "posti": 60
+          "planimetria": {
+            "righe_griglia": 4,
+            "colonne_griglia": 6,
+            "layout": [
+              ["T1", "X", "T2", "X", "T3", "X"],
+              ["T4", "X", "T5", "X", "T6", "X"],
+              ["T7", "X", "T8", "X", "T9", "X"],
+              ["T10", "X", "T11", "X", "T12", "X"]
+            ],
+            "mappa_struttura": {
+              "T1": { "nome": "Tavolo 1", "riga": 0, "colonna": 0, "posti_totali": 6, "ha_prese": true },
+              "T2": { "nome": "Tavolo 2", "riga": 0, "colonna": 2, "posti_totali": 6, "ha_prese": true },
+              "T3": { "nome": "Tavolo 3", "riga": 0, "colonna": 4, "posti_totali": 4, "ha_prese": false },
+              "T4": { "nome": "Tavolo 4", "riga": 1, "colonna": 0, "posti_totali": 6, "ha_prese": true },
+              "T5": { "nome": "Tavolo 5", "riga": 1, "colonna": 2, "posti_totali": 6, "ha_prese": true },
+              "T6": { "nome": "Tavolo 6", "riga": 1, "colonna": 4, "posti_totali": 4, "ha_prese": false },
+              "T7": { "nome": "Tavolo 7", "riga": 2, "colonna": 0, "posti_totali": 6, "ha_prese": true },
+              "T8": { "nome": "Tavolo 8", "riga": 2, "colonna": 2, "posti_totali": 6, "ha_prese": true },
+              "T9": { "nome": "Tavolo 9", "riga": 2, "colonna": 4, "posti_totali": 4, "ha_prese": false },
+              "T10": { "nome": "Tavolo 10", "riga": 3, "colonna": 0, "posti_totali": 4, "ha_prese": true },
+              "T11": { "nome": "Tavolo 11", "riga": 3, "colonna": 2, "posti_totali": 4, "ha_prese": true },
+              "T12": { "nome": "Tavolo 12", "riga": 3, "colonna": 4, "posti_totali": 4, "ha_prese": true }
+            }
+          }
         }
       ]
     },
     {
-      "id": "sap_architettura_giulia",
-      "nome": "Sala Studio Architettura Valle Giulia",
-      "edificio_sigla": "RM062",
-      "edificio_nome": "Facoltà di Architettura Valle Giulia",
-      "indirizzo": "Via Antonio Gramsci 53, 00197 Roma",
-      "immagine_copertina": "https://www.radiocolonna.it/public/images/2020/10/D940D26C-8E6B-49AF-B50C-C1B65A2E83D5-1280x720.jpeg",
+      "id": "sap_scarpa_ghizzetti",
+      "nome": "Sala Ghizzetti - Ingegneria (H24)",
+      "edificio_sigla": "RM007",
+      "edificio_nome": "Scienze di base e applicate per l'Ingegneria",
+      "indirizzo": "Via Antonio Scarpa 16, 00161 Roma",
+      "immagine_copertina": "https://www.dss.uniroma1.it/sites/default/files/slideimage/2022-05-14.jpg",
       "posizione": {
-        "latitudine": 41.918115,
-        "longitudine": 12.477742
+        "latitudine": 41.905183,
+        "longitudine": 12.515944
       },
       "orari": {
-        "feriali": "09:00 - 19:30",
-        "weekend": "Chiuso"
+        "feriali": "H24",
+        "weekend": "H24"
       },
-      "servizi": ["Wi-Fi", "Prese elettriche", "Tavoli da disegno", "Fotocopiatrici"],
-      "totale_posti": 95,
+      "servizi": ["Wi-Fi", "Prese elettriche", "Riscaldamento"],
+      "totale_posti": 70,
       "composizione_aule": [
         {
-          "aula_id": "biblioteca_centrale_arch",
-          "nome_aula": "Sala Maggiore della Biblioteca",
-          "piano": "1",
-          "posti": 70
-        },
-        {
-          "aula_id": "emme_quattro",
-          "nome_aula": "Aula M4 (Libera consultazione)",
+          "aula_id": "ghizzetti_main",
+          "nome_aula": "Sala Lettura Ghizzetti",
           "piano": "Terra",
-          "posti": 25
+          "planimetria": {
+            "righe_griglia": 5,
+            "colonne_griglia": 4,
+            "layout": [
+              ["T1", "X", "X", "T2"],
+              ["T3", "X", "X", "T4"],
+              ["T5", "X", "X", "T6"],
+              ["T7", "X", "X", "T8"],
+              ["T9", "X", "X", "T10"]
+            ],
+            "mappa_struttura": {
+              "T1": { "nome": "Tavolo Finestra 1", "riga": 0, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T2": { "nome": "Tavolo Muro 1", "riga": 0, "colonna": 3, "posti_totali": 6, "ha_prese": true },
+              "T3": { "nome": "Tavolo Finestra 2", "riga": 1, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T4": { "nome": "Tavolo Muro 2", "riga": 1, "colonna": 3, "posti_totali": 6, "ha_prese": true },
+              "T5": { "nome": "Tavolo Finestra 3", "riga": 2, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T6": { "nome": "Tavolo Muro 3", "riga": 2, "colonna": 3, "posti_totali": 6, "ha_prese": true },
+              "T7": { "nome": "Tavolo Finestra 4", "riga": 3, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T8": { "nome": "Tavolo Muro 4", "riga": 3, "colonna": 3, "posti_totali": 6, "ha_prese": true },
+              "T9": { "nome": "Tavolo Ingresso 1", "riga": 4, "colonna": 0, "posti_totali": 8, "ha_prese": false },
+              "T10": { "nome": "Tavolo Ingresso 2", "riga": 4, "colonna": 3, "posti_totali": 6, "ha_prese": false }
+            }
+          }
         }
       ]
     },
     {
-      "id": "sap_giurisprudenza_centrale",
-      "nome": "Biblioteca di Giurisprudenza",
-      "edificio_sigla": "CU002",
-      "edificio_nome": "Facoltà di Giurisprudenza (Città Universitaria)",
+      "id": "sap_marco_polo",
+      "nome": "Sale Lettura Edificio Marco Polo",
+      "edificio_sigla": "RM021",
+      "edificio_nome": "Edificio Marco Polo (Ex Poste)",
+      "indirizzo": "Circonvallazione Tiburtina 4, 00185 Roma",
+      "immagine_copertina": "https://apristudio.it/wp-content/uploads/2021/04/Marcopolo_COPERTINA.jpg",
+      "posizione": {
+        "latitudine": 41.899015,
+        "longitudine": 12.522238
+      },
+      "orari": {
+        "feriali": "09:00 - 24:00",
+        "weekend": "09:00 - 19:00"
+      },
+      "servizi": ["Wi-Fi", "Prese elettriche", "Aria condizionata", "Ascensore"],
+      "totale_posti": 187,
+      "composizione_aule": [
+        {
+          "aula_id": "studi_orientali",
+          "nome_aula": "Sala Lettura Studi Orientali",
+          "piano": "Terra",
+          "planimetria": {
+            "righe_griglia": 4,
+            "colonne_griglia": 6,
+            "layout": [
+              ["T1", "T2", "X", "X", "T3", "T4"],
+              ["T5", "T6", "X", "X", "T7", "T8"],
+              ["T9", "T10", "X", "X", "T11", "T12"],
+              ["T13", "T14", "X", "X", "T15", "T16"]
+            ],
+            "mappa_struttura": {
+              "T1": { "nome": "A1", "riga": 0, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T2": { "nome": "A2", "riga": 0, "colonna": 1, "posti_totali": 8, "ha_prese": true },
+              "T3": { "nome": "B1", "riga": 0, "colonna": 4, "posti_totali": 8, "ha_prese": true },
+              "T4": { "nome": "B2", "riga": 0, "colonna": 5, "posti_totali": 8, "ha_prese": true },
+              "T5": { "nome": "A3", "riga": 1, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T6": { "nome": "A4", "riga": 1, "colonna": 1, "posti_totali": 8, "ha_prese": true },
+              "T7": { "nome": "B3", "riga": 1, "colonna": 4, "posti_totali": 8, "ha_prese": true },
+              "T8": { "nome": "B4", "riga": 1, "colonna": 5, "posti_totali": 8, "ha_prese": true },
+              "T9": { "nome": "A5", "riga": 2, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T10": { "nome": "A6", "riga": 2, "colonna": 1, "posti_totali": 8, "ha_prese": true },
+              "T11": { "nome": "B5", "riga": 2, "colonna": 4, "posti_totali": 8, "ha_prese": true },
+              "T12": { "nome": "B6", "riga": 2, "colonna": 5, "posti_totali": 8, "ha_prese": true },
+              "T13": { "nome": "A7", "riga": 3, "colonna": 0, "posti_totali": 7, "ha_prese": true },
+              "T14": { "nome": "A8", "riga": 3, "colonna": 1, "posti_totali": 7, "ha_prese": true },
+              "T15": { "nome": "B7", "riga": 3, "colonna": 4, "posti_totali": 7, "ha_prese": true },
+              "T16": { "nome": "B8", "riga": 3, "colonna": 5, "posti_totali": 7, "ha_prese": true }
+            }
+          }
+        },
+        {
+          "aula_id": "lingue_straniere",
+          "nome_aula": "Sala Lettura Lingue e Letterature Straniere",
+          "piano": "1",
+          "planimetria": {
+            "righe_griglia": 3,
+            "colonne_griglia": 4,
+            "layout": [
+              ["T1", "X", "T2", "T3"],
+              ["T4", "X", "T5", "T6"],
+              ["T7", "X", "T8", "T9"]
+            ],
+            "mappa_struttura": {
+              "T1": { "nome": "Tavolo Singolo Finestra 1", "riga": 0, "colonna": 0, "posti_totali": 5, "ha_prese": true },
+              "T2": { "nome": "Tavolo Centrale 1", "riga": 0, "colonna": 2, "posti_totali": 8, "ha_prese": true },
+              "T3": { "nome": "Tavolo Centrale 2", "riga": 0, "colonna": 3, "posti_totali": 8, "ha_prese": true },
+              "T4": { "nome": "Tavolo Singolo Finestra 2", "riga": 1, "colonna": 0, "posti_totali": 5, "ha_prese": true },
+              "T5": { "nome": "Tavolo Centrale 3", "riga": 1, "colonna": 2, "posti_totali": 8, "ha_prese": true },
+              "T6": { "nome": "Tavolo Centrale 4", "riga": 1, "colonna": 3, "posti_totali": 8, "ha_prese": true },
+              "T7": { "nome": "Tavolo Singolo Finestra 3", "riga": 2, "colonna": 0, "posti_totali": 5, "ha_prese": false },
+              "T8": { "nome": "Tavolo Centrale 5", "riga": 2, "colonna": 2, "posti_totali": 8, "ha_prese": true },
+              "T9": { "nome": "Tavolo Centrale 6", "riga": 2, "colonna": 3, "posti_totali": 8, "ha_prese": true }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sap_scienze_terra",
+      "nome": "Sale Studio Scienze della Terra",
+      "edificio_sigla": "CU005",
+      "edificio_nome": "Mineralogia, Geologia e Paleontologia",
       "indirizzo": "Piazzale Aldo Moro 5, 00185 Roma",
-      "immagine_copertina": "https://www.uniroma1.it/sites/default/files/styles/1150_300/public/giurisprudenza_3.jpg",
+      "immagine_copertina": "https://live.staticflickr.com/4421/36332253681_e4469cac82_z.jpg",
       "posizione": {
-        "latitudine": 41.904012,
-        "longitudine": 12.514105
+        "latitudine": 41.902341,
+        "longitudine": 12.514782
       },
       "orari": {
-        "feriali": "08:30 - 22:00",
-        "weekend": "Sabato 08:30 - 13:30"
+        "feriali": "09:00 - 20:00",
+        "weekend": "Sabato e Domenica 08:00 - 20:00"
       },
-      "servizi": ["Wi-Fi", "Prese elettriche", "Riscaldamento", "Silenziatore acustico"],
-      "totale_posti": 180,
+      "servizi": ["Wi-Fi", "Prese elettriche"],
+      "totale_posti": 142,
       "composizione_aule": [
         {
-          "aula_id": "sala_diritto_privato",
-          "nome_aula": "Sala Diritto Privato",
+          "aula_id": "biblioteca_dst",
+          "nome_aula": "Sala Studio della Biblioteca",
           "piano": "Terra",
-          "posti": 100
+          "planimetria": {
+            "righe_griglia": 3,
+            "colonne_griglia": 5,
+            "layout": [
+              ["T1", "X", "T2", "X", "T3"],
+              ["T4", "X", "T5", "X", "T6"],
+              ["T7", "X", "T8", "X", "T9"]
+            ],
+            "mappa_struttura": {
+              "T1": { "nome": "Fila A - Postazione 1", "riga": 0, "colonna": 0, "posti_totali": 12, "ha_prese": true },
+              "T2": { "nome": "Fila B - Postazione 1", "riga": 0, "colonna": 2, "posti_totali": 12, "ha_prese": true },
+              "T3": { "nome": "Fila C - Postazione 1", "riga": 0, "colonna": 4, "posti_totali": 10, "ha_prese": false },
+              "T4": { "nome": "Fila A - Postazione 2", "riga": 1, "colonna": 0, "posti_totali": 12, "ha_prese": true },
+              "T5": { "nome": "Fila B - Postazione 2", "riga": 1, "colonna": 2, "posti_totali": 12, "ha_prese": true },
+              "T6": { "nome": "Fila C - Postazione 2", "riga": 1, "colonna": 4, "posti_totali": 10, "ha_prese": false },
+              "T7": { "nome": "Fila A - Postazione 3", "riga": 2, "colonna": 0, "posti_totali": 12, "ha_prese": true },
+              "T8": { "nome": "Fila B - Postazione 3", "riga": 2, "colonna": 2, "posti_totali": 12, "ha_prese": true },
+              "T9": { "nome": "Fila C - Postazione 3", "riga": 2, "colonna": 4, "posti_totali": 10, "ha_prese": false }
+            }
+          }
         },
         {
-          "aula_id": "sala_diritto_pubblico",
-          "nome_aula": "Sala Diritto Pubblico",
+          "aula_id": "sala_ponte",
+          "nome_aula": "Sala Ponte (Stanza 115)",
           "piano": "1",
-          "posti": 80
+          "planimetria": {
+            "righe_griglia": 2,
+            "colonne_griglia": 3,
+            "layout": [
+              ["T1", "X", "T2"],
+              ["T3", "X", "T4"]
+            ],
+            "mappa_struttura": {
+              "T1": { "nome": "Tavolo Finestra A", "riga": 0, "colonna": 0, "posti_totali": 6, "ha_prese": true },
+              "T2": { "nome": "Tavolo Muro A", "riga": 0, "colonna": 2, "posti_totali": 6, "ha_prese": true },
+              "T3": { "nome": "Tavolo Finestra B", "riga": 1, "colonna": 0, "posti_totali": 6, "ha_prese": true },
+              "T4": { "nome": "Tavolo Muro B", "riga": 1, "colonna": 2, "posti_totali": 7, "ha_prese": true }
+            }
+          }
+        },
+        {
+          "aula_id": "tavolone",
+          "nome_aula": "Il Tavolone",
+          "piano": "2",
+          "planimetria": {
+            "righe_griglia": 1,
+            "colonne_griglia": 1,
+            "layout": [
+              ["T1"]
+            ],
+            "mappa_struttura": {
+              "T1": { "nome": "Monoblocco Centrale", "riga": 0, "colonna": 0, "posti_totali": 15, "ha_prese": true }
+            }
+          }
         }
       ]
     },
     {
-      "id": "sap_psicologia_de_lollis",
-      "nome": "Sala Studio Psicologia / Lettere (Via dei Sardi)",
-      "edificio_sigla": "RM035",
-      "edificio_nome": "Sede di Via dei Sardi - San Lorenzo",
-      "indirizzo": "Via dei Sardi 70, 00185 Roma",
-      "immagine_copertina": "https://www.uniroma1.it/sites/default/files/styles/1150_300/public/psicologia_2.jpg",
+      "id": "sap_informatica_regina",
+      "nome": "Aule Studio Informatica",
+      "edificio_sigla": "RM018",
+      "edificio_nome": "Edificio E - Viale Regina Elena",
+      "indirizzo": "Viale Regina Elena 295, 00161 Roma",
+      "immagine_copertina": "https://www.di.uniroma1.it/sites/default/files/styles/1150_300/public/Regina%20Elena.jpg",
       "posizione": {
-        "latitudine": 41.897312,
-        "longitudine": 12.519894
+        "latitudine": 41.905621,
+        "longitudine": 12.512102
       },
       "orari": {
-        "feriali": "09:00 - 19:00",
+        "feriali": "08:30 - 19:30",
         "weekend": "Chiuso"
       },
-      "servizi": ["Wi-Fi", "Prese elettriche", "Aria condizionata"],
-      "totale_posti": 50,
+      "servizi": ["Wi-Fi", "Prese elettriche", "Laboratorio PC"],
+      "totale_posti": 80,
       "composizione_aule": [
         {
-          "aula_id": "sardi_unica",
-          "nome_aula": "Sala Lettura Unificata",
-          "piano": "Terra",
-          "posti": 50
+          "aula_id": "aula_s4",
+          "nome_aula": "Aula Studio S4",
+          "piano": "-1",
+          "planimetria": {
+            "righe_griglia": 3,
+            "colonne_griglia": 3,
+            "layout": [
+              ["T1", "X", "T2"],
+              ["T3", "X", "T4"],
+              ["T5", "X", "T6"]
+            ],
+            "mappa_struttura": {
+              "T1": { "nome": "Tavolo Sinistro 1", "riga": 0, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T2": { "nome": "Tavolo Destro 1", "riga": 0, "colonna": 2, "posti_totali": 7, "ha_prese": true },
+              "T3": { "nome": "Tavolo Sinistro 2", "riga": 1, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T4": { "nome": "Tavolo Destro 2", "riga": 1, "colonna": 2, "posti_totali": 7, "ha_prese": true },
+              "T5": { "nome": "Tavolo Sinistro 3", "riga": 2, "colonna": 0, "posti_totali": 8, "ha_prese": true },
+              "T6": { "nome": "Tavolo Destro 3", "riga": 2, "colonna": 2, "posti_totali": 7, "ha_prese": true }
+            }
+          }
+        },
+        {
+          "aula_id": "colossus",
+          "nome_aula": "Laboratorio Colossus",
+          "piano": "-1",
+          "planimetria": {
+            "righe_griglia": 2,
+            "colonne_griglia": 4,
+            "layout": [
+              ["T1", "T2", "X", "X"],
+              ["T3", "T4", "X", "X"]
+            ],
+            "mappa_struttura": {
+              "T1": { "nome": "Isola PC A1", "riga": 0, "colonna": 0, "posti_totali": 9, "ha_prese": true },
+              "T2": { "nome": "Isola PC A2", "riga": 0, "colonna": 1, "posti_totali": 9, "ha_prese": true },
+              "T3": { "nome": "Isola PC B1", "riga": 1, "colonna": 0, "posti_totali": 9, "ha_prese": true },
+              "T4": { "nome": "Isola PC B2", "riga": 1, "colonna": 1, "posti_totali": 8, "ha_prese": true }
+            }
+          }
         }
       ]
     }
