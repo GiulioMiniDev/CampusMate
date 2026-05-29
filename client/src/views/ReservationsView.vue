@@ -5,12 +5,22 @@
         <p class="text-uppercase small fw-semibold tracking mb-2">Accesso reception</p>
         <h1 class="h3 mb-1">Le mie prenotazioni</h1>
         <small class="cm-section-kicker">
-          {{ activeReservations.length }} prenotazioni attive
+          {{ activeReservations.length }} attive, {{ pastReservations.length }} vecchie
         </small>
       </div>
-      <button type="button" class="cm-button cm-button-outline cm-button-sm" @click="refreshReservations">
-        Aggiorna
-      </button>
+      <div class="reservations-header-actions">
+        <button
+          type="button"
+          class="cm-button cm-button-outline cm-button-sm"
+          :disabled="!pastReservations.length"
+          @click="showPastReservations = !showPastReservations"
+        >
+          {{ showPastReservations ? "Nascondi vecchie" : "Mostra vecchie" }}
+        </button>
+        <button type="button" class="cm-button cm-button-outline cm-button-sm" @click="refreshReservations">
+          Aggiorna
+        </button>
+      </div>
     </div>
 
     <div v-if="loadingReservations" class="cm-alert cm-alert-info">
@@ -22,74 +32,127 @@
       {{ reservationsMessage }}
     </div>
 
-    <div v-else-if="!activeReservations.length" class="cm-panel reservations-empty">
-      <h2 class="h5 mb-2">Nessuna prenotazione attiva</h2>
-      <p class="text-body-secondary mb-0">
-        Quando prenoti un tavolo, qui comparira il QR code da mostrare alla reception.
-      </p>
-    </div>
+    <template v-else>
+      <div v-if="!activeReservations.length" class="cm-panel reservations-empty">
+        <h2 class="h5 mb-2">Nessuna prenotazione attiva</h2>
+        <p class="text-body-secondary mb-0">
+          Quando prenoti un tavolo, qui comparira il QR code da mostrare alla reception.
+        </p>
+      </div>
 
-    <div v-else class="reservations-list">
-      <article
-        v-for="reservation in activeReservations"
-        :key="reservation.id"
-        class="reservation-card cm-card"
-      >
-        <div class="reservation-card-main">
-          <div class="reservation-card-title">
-            <div>
-              <span class="cm-badge cm-badge-success">Attiva</span>
-              <h2>{{ reservation.room_name }}</h2>
-              <p>{{ reservation.building_name }} - Tavolo {{ reservation.table_code }}</p>
+      <div v-else class="reservations-list">
+        <article
+          v-for="reservation in activeReservations"
+          :key="reservation.id"
+          class="reservation-card cm-card"
+        >
+          <div class="reservation-card-main">
+            <div class="reservation-card-title">
+              <div>
+                <span class="cm-badge cm-badge-success">Attiva</span>
+                <h2>{{ reservation.room_name }}</h2>
+                <p>{{ reservation.building_name }} - Tavolo {{ reservation.table_code }}</p>
+              </div>
+              <span class="reservation-id">#{{ reservation.id }}</span>
             </div>
-            <span class="reservation-id">#{{ reservation.id }}</span>
+
+            <dl class="reservation-details">
+              <div>
+                <dt>Inizio</dt>
+                <dd>{{ formatDateTime(reservation.start_time) }}</dd>
+              </div>
+              <div>
+                <dt>Fine</dt>
+                <dd>{{ formatDateTime(reservation.end_time) }}</dd>
+              </div>
+              <div>
+                <dt>Posti</dt>
+                <dd>{{ reservation.seats_requested }}</dd>
+              </div>
+              <div>
+                <dt>Tipo</dt>
+                <dd>{{ formatReservationType(reservation.reservation_type) }}</dd>
+              </div>
+            </dl>
+
+            <p v-if="reservation.notes" class="reservation-notes">
+              {{ reservation.notes }}
+            </p>
           </div>
 
-          <dl class="reservation-details">
-            <div>
-              <dt>Inizio</dt>
-              <dd>{{ formatDateTime(reservation.start_time) }}</dd>
+          <div class="reservation-qr-panel">
+            <div class="reservation-qr">
+              <img
+                v-if="qrCodes[reservation.id]"
+                :src="qrCodes[reservation.id]"
+                :alt="`QR prenotazione ${reservation.id}`"
+              >
+              <div v-else class="reservation-qr-loading">QR</div>
             </div>
-            <div>
-              <dt>Fine</dt>
-              <dd>{{ formatDateTime(reservation.end_time) }}</dd>
-            </div>
-            <div>
-              <dt>Posti</dt>
-              <dd>{{ reservation.seats_requested }}</dd>
-            </div>
-            <div>
-              <dt>Tipo</dt>
-              <dd>{{ formatReservationType(reservation.reservation_type) }}</dd>
-            </div>
-          </dl>
-
-          <p v-if="reservation.notes" class="reservation-notes">
-            {{ reservation.notes }}
-          </p>
-        </div>
-
-        <div class="reservation-qr-panel">
-          <div class="reservation-qr">
-            <img
-              v-if="qrCodes[reservation.id]"
-              :src="qrCodes[reservation.id]"
-              :alt="`QR prenotazione ${reservation.id}`"
+            <small>Mostralo alla reception</small>
+            <button
+              type="button"
+              class="cm-button cm-button-outline cm-button-sm reservation-cancel-button"
+              :disabled="cancellingReservationId === reservation.id"
+              @click="confirmCancelReservation(reservation)"
             >
-            <div v-else class="reservation-qr-loading">QR</div>
+              {{ cancellingReservationId === reservation.id ? "Cancellazione..." : "Cancella" }}
+            </button>
           </div>
-          <small>Mostralo alla reception</small>
-          <button
-            type="button"
-            class="cm-button cm-button-outline cm-button-sm reservation-cancel-button"
-            :disabled="cancellingReservationId === reservation.id"
-            @click="confirmCancelReservation(reservation)"
-          >
-            {{ cancellingReservationId === reservation.id ? "Cancellazione..." : "Cancella" }}
-          </button>
+        </article>
+      </div>
+
+      <div v-if="showPastReservations" class="reservations-history">
+        <div class="reservations-history-heading">
+          <h2 class="h5 mb-0">Prenotazioni vecchie</h2>
+          <small>{{ pastReservations.length }} totali</small>
         </div>
-      </article>
-    </div>
+
+        <div v-if="!pastReservations.length" class="cm-alert cm-alert-muted">
+          Non ci sono ancora prenotazioni vecchie.
+        </div>
+
+        <div v-else class="reservations-list reservations-list-compact">
+          <article
+            v-for="reservation in pastReservations"
+            :key="reservation.id"
+            class="reservation-card reservation-card-past cm-card"
+          >
+            <div class="reservation-card-main">
+              <div class="reservation-card-title">
+                <div>
+                  <span :class="['cm-badge', getReservationStatusBadgeClass(reservation)]">
+                    {{ formatReservationStatus(reservation) }}
+                  </span>
+                  <h2>{{ reservation.room_name }}</h2>
+                  <p>{{ reservation.building_name }} - Tavolo {{ reservation.table_code }}</p>
+                </div>
+                <span class="reservation-id">#{{ reservation.id }}</span>
+              </div>
+
+              <dl class="reservation-details">
+                <div>
+                  <dt>Inizio</dt>
+                  <dd>{{ formatDateTime(reservation.start_time) }}</dd>
+                </div>
+                <div>
+                  <dt>Fine</dt>
+                  <dd>{{ formatDateTime(reservation.end_time) }}</dd>
+                </div>
+                <div>
+                  <dt>Posti</dt>
+                  <dd>{{ reservation.seats_requested }}</dd>
+                </div>
+                <div>
+                  <dt>Tipo</dt>
+                  <dd>{{ formatReservationType(reservation.reservation_type) }}</dd>
+                </div>
+              </dl>
+            </div>
+          </article>
+        </div>
+      </div>
+    </template>
   </section>
 </template>
 
@@ -103,11 +166,13 @@ export default {
   data() {
     return {
       qrCodes: {},
-      cancellingReservationId: null
+      cancellingReservationId: null,
+      showPastReservations: false
     };
   },
   computed: {
     activeReservations() { return getters.getActiveReservations(); },
+    pastReservations() { return getters.getPastReservations(); },
     loadingReservations() { return state.loadingReservations; },
     reservationsMessage() { return state.reservationsMessage; }
   },
@@ -171,6 +236,38 @@ export default {
     },
     formatReservationType(value) {
       return value === "group" ? "Gruppo" : "Individuale";
+    },
+    formatReservationStatus(reservation) {
+      if (this.isExpiredActiveReservation(reservation)) {
+        return "Scaduta";
+      }
+
+      const labels = {
+        active: "Attiva",
+        cancelled: "Cancellata",
+        completed: "Completata"
+      };
+
+      return labels[reservation.status] || reservation.status || "-";
+    },
+    getReservationStatusBadgeClass(reservation) {
+      if (this.isExpiredActiveReservation(reservation)) {
+        return "cm-badge-warning";
+      }
+
+      if (reservation.status === "cancelled") {
+        return "cm-badge-danger";
+      }
+
+      if (reservation.status === "completed") {
+        return "cm-badge-info";
+      }
+
+      return "cm-badge-success";
+    },
+    isExpiredActiveReservation(reservation) {
+      const endTime = parseDateTime(reservation.end_time);
+      return reservation.status === "active" && endTime && endTime <= new Date();
     },
     async confirmCancelReservation(reservation) {
       const confirmed = window.confirm(

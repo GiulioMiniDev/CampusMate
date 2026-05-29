@@ -90,8 +90,13 @@ export const getters = {
   },
 
   getActiveReservations() {
+    const now = new Date();
+
     return state.reservations
-      .filter((reservation) => reservation.status === "active")
+      .filter((reservation) => {
+        const endTime = parseDateTime(reservation.end_time);
+        return reservation.status === "active" && (!endTime || endTime > now);
+      })
       .sort((a, b) => {
         const firstStart = parseDateTime(a.start_time);
         const secondStart = parseDateTime(b.start_time);
@@ -101,6 +106,26 @@ export const getters = {
         }
 
         return firstStart - secondStart;
+      });
+  },
+
+  getPastReservations() {
+    const now = new Date();
+
+    return state.reservations
+      .filter((reservation) => {
+        const endTime = parseDateTime(reservation.end_time);
+        return reservation.status !== "active" || (endTime && endTime <= now);
+      })
+      .sort((a, b) => {
+        const firstStart = parseDateTime(a.start_time);
+        const secondStart = parseDateTime(b.start_time);
+
+        if (!firstStart || !secondStart) {
+          return 0;
+        }
+
+        return secondStart - firstStart;
       });
   }
 };
